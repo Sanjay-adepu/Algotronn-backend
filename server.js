@@ -1,10 +1,17 @@
 const express = require('express');
 const { OAuth2Client } = require('google-auth-library');
 const bodyParser = require('body-parser');
+const cors = require('cors');
+
 
 // Initialize Express
 const app = express();
 app.use(bodyParser.json());
+
+app.use(cors({
+  origin: ["https://www.falconai.space", "http://localhost:5173"],
+  methods: ["GET", "POST"]
+}));
 
 // Google OAuth Client
 const client = new OAuth2Client("741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com");
