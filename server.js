@@ -9,7 +9,7 @@ app.use(express.json());
 
 const client = new OAuth2Client("741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com");
 
-app.post('/api/google-login', async (req, res) => {
+app.post('/google-login', async (req, res) => {
   const { token } = req.body;
   try {
     const ticket = await client.verifyIdToken({
