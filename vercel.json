@@ -8,7 +8,7 @@
   ],
   "routes": [
     {
-      "src": "/api/google-login",
+      "src": "/(.*)",
       "dest": "/server.js"
     }
   ]
