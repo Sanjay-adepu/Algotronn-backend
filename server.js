@@ -1,4 +1,3 @@
-// backend/index.js
 const express = require('express');
 const cors = require('cors');
 const { OAuth2Client } = require('google-auth-library');
@@ -9,13 +8,15 @@ app.use(express.json());
 
 const client = new OAuth2Client("741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com");
 
-app.post('/google-login', async (req, res) => {
+app.post('/api/google-login', async (req, res) => {
   const { token } = req.body;
+
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: "741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com",
     });
+
     const payload = ticket.getPayload();
     res.json({ success: true, user: payload });
   } catch (error) {
@@ -24,4 +25,5 @@ app.post('/google-login', async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+// This line is key for Vercel serverless function
+module.exports = app;
