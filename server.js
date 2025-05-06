@@ -1,23 +1,29 @@
 const express = require('express');
-const cors = require('cors');
 const { OAuth2Client } = require('google-auth-library');
+const bodyParser = require('body-parser');
 
+// Initialize Express
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
+// Google OAuth Client
 const client = new OAuth2Client("741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com");
 
+// Google login endpoint
 app.post('/api/google-login', async (req, res) => {
   const { token } = req.body;
 
   try {
+    // Verify the Google ID token
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: "741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com",
+      audience: "741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com", // Your client ID
     });
 
+    // Get the payload from the verified ticket
     const payload = ticket.getPayload();
+
+    // Send back the user information
     res.json({ success: true, user: payload });
   } catch (error) {
     console.error(error);
@@ -25,5 +31,5 @@ app.post('/api/google-login', async (req, res) => {
   }
 });
 
-// This line is key for Vercel serverless function
+// Vercel handler export
 module.exports = app;
