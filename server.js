@@ -104,6 +104,30 @@ app.post('/api/google-login', async (req, res) => {
 });
 
 
+// Route to fetch user's address by email
+app.get('/get-address', async (req, res) => {
+  await connectDB();
+
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
+
+  try {
+    const address = await Address.findOne({ email });
+
+    if (!address) {
+      return res.status(404).json({ success: false, message: "Address not found" });
+    }
+
+    res.status(200).json({ success: true, address });
+  } catch (error) {
+    console.error("Error fetching address:", error);
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+});
+
 
 // Required for Vercel deployment
 module.exports = app;
