@@ -112,28 +112,27 @@ app.post('/api/google-login', async (req, res) => {
 
 
 // Route to fetch user's address by email
-app.get('/get-address', async (req, res) => {
+app.post('/get-address', async (req, res) => {
   await connectDB();
-
-  const { email } = req.query;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required" });
-  }
+  const { googleId } = req.body;
 
   try {
-    const address = await Address.findOne({ email });
-
-    if (!address) {
-      return res.status(404).json({ success: false, message: "Address not found" });
+    const user = await User.findOne({ googleId }).populate('address');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    res.status(200).json({ success: true, address });
+    if (!user.address) {
+      return res.status(200).json({ success: true, address: null, message: 'No address found for this user' });
+    }
+
+    res.status(200).json({ success: true, address: user.address });
   } catch (error) {
-    console.error("Error fetching address:", error);
-    res.status(500).json({ success: false, message: "Server error", error });
+    console.error('Error fetching address:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
+
 
 
 // Required for Vercel deployment
