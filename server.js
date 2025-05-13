@@ -39,10 +39,16 @@ async function connectDB() {
 
 // Post route for adding a new address
 app.post('/add-address', async (req, res) => {
-  try {
-    const { name, mobile, email, address, locality, landmark, pincode, city, state } = req.body;
+  await connectDB();
 
-    // Create new address entry
+  const { googleId, name, mobile, email, address, locality, landmark, pincode, city, state } = req.body;
+
+  try {
+    const user = await User.findOne({ googleId });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     const newAddress = new Address({
       name,
       mobile,
@@ -55,17 +61,18 @@ app.post('/add-address', async (req, res) => {
       state,
     });
 
-    // Save the address to the database
     await newAddress.save();
 
-    // Respond with success message
+    // Link address to user
+    user.address = newAddress._id;
+    await user.save();
+
     res.status(201).json({ message: 'Address added successfully', address: newAddress });
   } catch (error) {
     console.error('Error adding address:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 });
-
 
 
 app.post('/api/google-login', async (req, res) => {
