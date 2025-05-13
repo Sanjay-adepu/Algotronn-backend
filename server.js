@@ -87,6 +87,7 @@ app.post('/api/google-login', async (req, res) => {
         picture: payload.picture,
       });
       await user.save();
+user = await User.findOne({ googleId: payload.sub }); // Ensures it's fully written
     }
 
     res.json({ success: true, user, isNewUser });
