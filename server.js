@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 // MongoDB connection
 const mongoose = require('mongoose');
+const User = require('./model/User.js');
 
 mongoose.connect("mongodb+srv://Algotran:1234@cluster0.gum2tc7.mongodb.net/Algotran?retryWrites=true&w=majority", {
   useNewUrlParser: true,
