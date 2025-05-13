@@ -72,6 +72,7 @@ app.post('/api/google-login', async (req, res) => {
   await connectDB();
 
   const { token } = req.body;
+
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
@@ -82,7 +83,10 @@ app.post('/api/google-login', async (req, res) => {
 
     let user = await User.findOne({ googleId: payload.sub });
 
+    let isNewUser = false;
+
     if (!user) {
+      isNewUser = true;
       user = new User({
         googleId: payload.sub,
         name: payload.name,
@@ -92,12 +96,14 @@ app.post('/api/google-login', async (req, res) => {
       await user.save();
     }
 
-    res.json({ success: true, user });
+    res.json({ success: true, user, isNewUser });
   } catch (error) {
     console.error("Login error:", error);
     res.status(401).json({ success: false, message: "Invalid Token" });
   }
 });
+
+
 
 // Required for Vercel deployment
 module.exports = app;
