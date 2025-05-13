@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Address = require('./addressModel');  // Import Address model
+const Address = require('./addressModel.js');  // Import Address model
 
 const userSchema = new mongoose.Schema({
   googleId: { type: String, required: true, unique: true },
