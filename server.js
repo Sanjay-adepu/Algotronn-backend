@@ -49,30 +49,17 @@ app.post('/add-address', async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const newAddress = new Address({
-      name,
-      mobile,
-      email,
-      address,
-      locality,
-      landmark,
-      pincode,
-      city,
-      state,
-    });
-
-    await newAddress.save();
-
-    // Link address to user
-    user.address = newAddress._id;
+    user.address = { name, mobile, email, address, locality, landmark, pincode, city, state };
     await user.save();
 
-    res.status(201).json({ message: 'Address added successfully', address: newAddress });
+    res.status(201).json({ message: 'Address added successfully', address: user.address });
   } catch (error) {
     console.error('Error adding address:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 });
+
+
 
 
 app.post('/api/google-login', async (req, res) => {
@@ -117,16 +104,17 @@ app.post('/get-address', async (req, res) => {
   const { googleId } = req.body;
 
   try {
-    const user = await User.findOne({ googleId }).populate('address');
+    const user = await User.findOne({ googleId });
+
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (!user.address) {
-      return res.status(200).json({ success: true, address: null, message: 'No address found for this user' });
-    }
-
-    res.status(200).json({ success: true, address: user.address });
+    res.status(200).json({
+      success: true,
+      address: user.address || null,
+      message: user.address ? 'Address found' : 'No address found for this user',
+    });
   } catch (error) {
     console.error('Error fetching address:', error);
     res.status(500).json({ success: false, message: 'Server error', error });
