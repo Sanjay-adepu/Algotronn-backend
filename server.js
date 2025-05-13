@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 // MongoDB connection
 const mongoose = require('mongoose');
-const User = require('./model/User.js');
+const User = require('./Model/User.js');
 
 mongoose.connect("mongodb+srv://Algotran:1234@cluster0.gum2tc7.mongodb.net/Algotran?retryWrites=true&w=majority", {
   useNewUrlParser: true,
@@ -31,22 +31,35 @@ app.post('/api/google-login', async (req, res) => {
   const { token } = req.body;
 
   try {
-    // Verify the Google ID token
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: "741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com", // Your client ID
+      audience: "741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com",
     });
 
-    // Get the payload from the verified ticket
     const payload = ticket.getPayload();
 
-    // Send back the user information
-    res.json({ success: true, user: payload });
+    // Check if user already exists
+    let user = await User.findOne({ googleId: payload.sub });
+
+    // If not, create a new user
+    if (!user) {
+      user = new User({
+        googleId: payload.sub,
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture,
+      });
+      await user.save();
+    }
+
+    res.json({ success: true, user });
   } catch (error) {
     console.error(error);
     res.status(401).json({ success: false, message: "Invalid Token" });
   }
 });
+
+
 
 // Vercel handler export
 module.exports = app;
