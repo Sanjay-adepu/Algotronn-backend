@@ -3,7 +3,8 @@ const { OAuth2Client } = require('google-auth-library');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const User = require('./Model/User.js'); // Adjust path if needed
+const User = require('./Model/User.js'); 
+const Address = require('./Model/addressModel.js'); 
 
 mongoose.set('strictQuery', true);
 
@@ -34,6 +35,38 @@ async function connectDB() {
     console.error("MongoDB connection error:", error);
   }
 }
+
+
+// Post route for adding a new address
+app.post('/add-address', async (req, res) => {
+  try {
+    const { name, mobile, email, address, locality, landmark, pincode, city, state } = req.body;
+
+    // Create new address entry
+    const newAddress = new Address({
+      name,
+      mobile,
+      email,
+      address,
+      locality,
+      landmark,
+      pincode,
+      city,
+      state,
+    });
+
+    // Save the address to the database
+    await newAddress.save();
+
+    // Respond with success message
+    res.status(201).json({ message: 'Address added successfully', address: newAddress });
+  } catch (error) {
+    console.error('Error adding address:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+
 
 app.post('/api/google-login', async (req, res) => {
   await connectDB();
