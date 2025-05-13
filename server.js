@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const User = require('./Model/User.js'); 
-const Address = require('./Model/addressModel.js'); 
 
 mongoose.set('strictQuery', true);
 
