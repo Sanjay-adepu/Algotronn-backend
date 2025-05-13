@@ -2,34 +2,43 @@ const express = require('express');
 const { OAuth2Client } = require('google-auth-library');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-// MongoDB connection
 const mongoose = require('mongoose');
-const User = require('./Model/User.js');
+const User = require('./Model/User.js'); // Adjust path if needed
 
-mongoose.connect("mongodb+srv://Algotran:1234@cluster0.gum2tc7.mongodb.net/Algotran?retryWrites=true&w=majority", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected successfully"))
-.catch(err => console.error("MongoDB connection error:", err));
+mongoose.set('strictQuery', true);
 
+// MongoDB connection
+const MONGODB_URI = "mongodb+srv://Algotran:1234@cluster0.gum2tc7.mongodb.net/Algotran?retryWrites=true&w=majority";
 
-// Initialize Express
+const client = new OAuth2Client("741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com");
+
 const app = express();
 app.use(bodyParser.json());
-
 app.use(cors({
   origin: ["https://www.falconai.space", "http://localhost:5173"],
   methods: ["GET", "POST"]
 }));
 
-// Google OAuth Client
-const client = new OAuth2Client("741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.apps.googleusercontent.com");
+let isConnected = false;
 
-// Google login endpoint
+async function connectDB() {
+  if (isConnected) return;
+  try {
+    await mongoose.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    isConnected = true;
+    console.log("MongoDB connected successfully");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+  }
+}
+
 app.post('/api/google-login', async (req, res) => {
-  const { token } = req.body;
+  await connectDB();
 
+  const { token } = req.body;
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
@@ -38,10 +47,8 @@ app.post('/api/google-login', async (req, res) => {
 
     const payload = ticket.getPayload();
 
-    // Check if user already exists
     let user = await User.findOne({ googleId: payload.sub });
 
-    // If not, create a new user
     if (!user) {
       user = new User({
         googleId: payload.sub,
@@ -54,12 +61,10 @@ app.post('/api/google-login', async (req, res) => {
 
     res.json({ success: true, user });
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     res.status(401).json({ success: false, message: "Invalid Token" });
   }
 });
 
-
-
-// Vercel handler export
+// Required for Vercel deployment
 module.exports = app;
