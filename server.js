@@ -35,9 +35,8 @@ async function connectDB() {
   }
 }
 
-
-// Post route for adding a new address
-app.post('/add-address', async (req, res) => {
+// Route to update or add address
+app.post('/update-address', async (req, res) => {
   await connectDB();
 
   const { googleId, name, mobile, email, address, locality, landmark, pincode, city, state } = req.body;
@@ -48,19 +47,22 @@ app.post('/add-address', async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    const isNewAddress = !user.address;
     user.address = { name, mobile, email, address, locality, landmark, pincode, city, state };
     await user.save();
 
-    res.status(201).json({ message: 'Address added successfully', address: user.address });
+    res.status(200).json({ 
+      success: true,
+      message: isNewAddress ? 'Address added successfully' : 'Address updated successfully',
+      address: user.address 
+    });
   } catch (error) {
-    console.error('Error adding address:', error);
-    res.status(500).json({ message: 'Server error', error });
+    console.error('Error updating address:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
 
-
-
-
+// Google login route
 app.post('/api/google-login', async (req, res) => {
   await connectDB();
 
@@ -87,7 +89,7 @@ app.post('/api/google-login', async (req, res) => {
         picture: payload.picture,
       });
       await user.save();
-user = await User.findOne({ googleId: payload.sub }); // Ensures it's fully written
+      user = await User.findOne({ googleId: payload.sub }); // Ensures it's fully written
     }
 
     res.json({ success: true, user, isNewUser });
@@ -97,8 +99,7 @@ user = await User.findOne({ googleId: payload.sub }); // Ensures it's fully writ
   }
 });
 
-
-// Route to fetch user's address by email
+// Route to fetch user's address
 app.post('/get-address', async (req, res) => {
   await connectDB();
   const { googleId } = req.body;
@@ -120,8 +121,6 @@ app.post('/get-address', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
-
-
 
 // Required for Vercel deployment
 module.exports = app;
