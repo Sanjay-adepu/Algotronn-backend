@@ -1,6 +1,6 @@
-// User.js
 const mongoose = require('mongoose');
 
+// Address Schema
 const addressSchema = new mongoose.Schema({
   name: { type: String, required: true },
   mobile: { type: String, required: true },
@@ -11,14 +11,28 @@ const addressSchema = new mongoose.Schema({
   pincode: { type: String, required: true },
   city: { type: String, required: true },
   state: { type: String, required: true },
-}, { _id: false });  // Disable _id for subdocument if not needed
+}, { _id: false });
 
+// Cart Item Schema (no description)
+const cartItemSchema = new mongoose.Schema({
+  productId: { type: Number, required: true },
+  name: { type: String, required: true },
+  price: { type: Number, required: true },       // discounted price
+  originalPrice: { type: Number },               // for discount calc
+  discount: { type: Number },                    // e.g., 38
+  quantity: { type: Number, default: 1 },
+  imageUrl: { type: String },
+  inStock: { type: Boolean, default: true },
+}, { _id: false });
+
+// User Schema
 const userSchema = new mongoose.Schema({
   googleId: { type: String, required: true, unique: true },
   name: String,
   email: { type: String, required: true, unique: true },
   picture: String,
-  address: addressSchema, // Embedded address
+  address: addressSchema,
+  cart: [cartItemSchema], // Array of cart items
 }, { timestamps: true });
 
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);
