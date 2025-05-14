@@ -37,7 +37,7 @@ async function connectDB() {
 
 
 // POST /api/user/cart
-router.post('/cart', async (req, res) => {
+app.post('/cart', async (req, res) => {
   try {
     const { googleId, cartItem } = req.body;
 
@@ -55,7 +55,7 @@ router.post('/cart', async (req, res) => {
     );
 
     if (existingItemIndex !== -1) {
-      // If item exists, update quantity (you can customize this logic)
+      // If item exists, update quantity
       user.cart[existingItemIndex].quantity += cartItem.quantity || 1;
     } else {
       // Add new item
@@ -70,14 +70,6 @@ router.post('/cart', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-
-
-
-
-
-
-
 
 
 
