@@ -35,6 +35,52 @@ async function connectDB() {
   }
 }
 
+
+// POST /api/user/cart
+router.post('/cart', async (req, res) => {
+  try {
+    const { googleId, cartItem } = req.body;
+
+    if (!googleId || !cartItem || !cartItem.productId) {
+      return res.status(400).json({ message: 'Invalid data' });
+    }
+
+    const user = await User.findOne({ googleId });
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Check if item already exists in cart
+    const existingItemIndex = user.cart.findIndex(
+      item => item.productId === cartItem.productId
+    );
+
+    if (existingItemIndex !== -1) {
+      // If item exists, update quantity (you can customize this logic)
+      user.cart[existingItemIndex].quantity += cartItem.quantity || 1;
+    } else {
+      // Add new item
+      user.cart.push(cartItem);
+    }
+
+    await user.save();
+    res.status(200).json({ message: 'Cart updated', cart: user.cart });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
 // Route to update or add address
 app.post('/update-address', async (req, res) => {
   await connectDB();
