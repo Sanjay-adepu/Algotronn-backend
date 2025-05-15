@@ -63,12 +63,12 @@ app.post('/cart', async (req, res) => {
     );
 
     if (existingItemIndex !== -1) {
-      // Update quantity if item exists
-      user.cart[existingItemIndex].quantity += quantityToAdd;
-    } else {
-      // Add new item with valid quantity
-      user.cart.push({ ...cartItem, quantity: quantityToAdd });
-    }
+  // Replace quantity instead of adding
+  user.cart[existingItemIndex].quantity = quantityToAdd;
+} else {
+  // Add new item with valid quantity
+  user.cart.push({ ...cartItem, quantity: quantityToAdd });
+}
 
     await user.save();
     res.status(200).json({ message: 'Cart updated', cart: user.cart });
@@ -78,6 +78,43 @@ app.post('/cart', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+
+// Route to update only the quantity of a cart item
+app.post('/update-cart-quantity', async (req, res) => {
+  await connectDB();
+
+  const { googleId, productId, quantity } = req.body;
+
+  if (!googleId || !productId || typeof quantity !== 'number' || quantity < 1) {
+    return res.status(400).json({ success: false, message: 'Invalid input' });
+  }
+
+  try {
+    const user = await User.findOne({ googleId });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const itemIndex = user.cart.findIndex(item => item.productId === productId);
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Item not found in cart' });
+    }
+
+    user.cart[itemIndex].quantity = quantity;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Quantity updated', cart: user.cart });
+  } catch (error) {
+    console.error('Error updating quantity:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
+
+
 
 
 
