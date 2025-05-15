@@ -160,5 +160,28 @@ app.post('/get-address', async (req, res) => {
   }
 });
 
+
+// Route to get cart items by googleId
+app.post('/get-cart', async (req, res) => {
+  await connectDB();
+  const { googleId } = req.body;
+
+  try {
+    const user = await User.findOne({ googleId });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, cart: user.cart || [] });
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
+
+
+
+
 // Required for Vercel deployment
 module.exports = app;
