@@ -182,6 +182,34 @@ app.post('/get-cart', async (req, res) => {
 
 
 
+// Route to remove an item from cart by googleId and productId
+app.post('/remove-cart-item', async (req, res) => {
+  await connectDB();
+  const { googleId, productId } = req.body;
+
+  if (!googleId || !productId) {
+    return res.status(400).json({ success: false, message: 'Missing data' });
+  }
+
+  try {
+    const user = await User.findOne({ googleId });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.cart = user.cart.filter(item => item.productId !== productId);
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Item removed', cart: user.cart });
+  } catch (error) {
+    console.error('Error removing item:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
+
+
+
 
 // Required for Vercel deployment
 module.exports = app;
