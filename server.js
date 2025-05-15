@@ -4,8 +4,57 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const User = require('./Model/User.js'); 
+const Coupon = require('./Model/Coupon.js');
+
+app.post('/apply-coupon', async (req, res) => {
+  await connectDB();
+  const { googleId, couponCode } = req.body;
+
+  try {
+    const user = await User.findOne({ googleId });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
+    if (!coupon || (coupon.expiresAt && new Date() > coupon.expiresAt)) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired coupon' });
+    }
+
+    const cartTotal = user.cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const discount = (coupon.discountPercentage / 100) * cartTotal;
+    const finalTotal = cartTotal - discount;
+
+    return res.json({
+      success: true,
+      discount,
+      finalTotal,
+      originalTotal: cartTotal,
+      couponCode: coupon.code,
+      message: `Coupon applied: ${coupon.discountPercentage}% off`
+    });
+  } catch (err) {
+    console.error('Apply coupon error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
+
+app.post('/create-coupon', async (req, res) => {
+  const { code, discountPercentage, expiresAt } = req.body;
+  try {
+    const newCoupon = new Coupon({ code, discountPercentage, expiresAt });
+    await newCoupon.save();
+    res.status(201).json({ success: true, message: 'Coupon created' });
+  } catch (err) {
+    res.status(400).json({ success: false, message: 'Error creating coupon', error: err.message });
+  }
+});
+
+
+
 
 mongoose.set('strictQuery', true);
+
 
 // MongoDB connection
 const MONGODB_URI = "mongodb+srv://Algotran:1234@cluster0.gum2tc7.mongodb.net/Algotran?retryWrites=true&w=majority";
