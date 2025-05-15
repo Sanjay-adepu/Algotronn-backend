@@ -41,6 +41,8 @@ async function connectDB() {
 
 // POST /api/user/cart
 app.post('/cart', async (req, res) => {
+  await connectDB();
+
   try {
     const { googleId, cartItem } = req.body;
 
@@ -52,17 +54,20 @@ app.post('/cart', async (req, res) => {
 
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Ensure minimum quantity of 1
+    const quantityToAdd = cartItem.quantity && cartItem.quantity > 0 ? cartItem.quantity : 1;
+
     // Check if item already exists in cart
     const existingItemIndex = user.cart.findIndex(
       item => item.productId === cartItem.productId
     );
 
     if (existingItemIndex !== -1) {
-      // If item exists, update quantity
-      user.cart[existingItemIndex].quantity += cartItem.quantity || 1;
+      // Update quantity if item exists
+      user.cart[existingItemIndex].quantity += quantityToAdd;
     } else {
-      // Add new item
-      user.cart.push(cartItem);
+      // Add new item with valid quantity
+      user.cart.push({ ...cartItem, quantity: quantityToAdd });
     }
 
     await user.save();
@@ -73,6 +78,7 @@ app.post('/cart', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 
 
@@ -176,12 +182,23 @@ app.post('/get-cart', async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    res.status(200).json({ success: true, cart: user.cart || [] });
+    // Fix cart items with zero quantity
+    user.cart = user.cart.map(item => ({
+      ...item,
+      quantity: item.quantity > 0 ? item.quantity : 1
+    }));
+
+    await user.save(); // persist fix if needed
+
+    res.status(200).json({ success: true, cart: user.cart });
   } catch (error) {
     console.error('Error fetching cart:', error);
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
+
+
+
 
 
 
