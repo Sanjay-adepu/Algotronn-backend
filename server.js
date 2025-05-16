@@ -353,6 +353,49 @@ app.post('/place-order', async (req, res) => {
 });
 
 
+app.post('/update-cart-pricing', async (req, res) => {
+  await connectDB();
+
+  const { googleId, productId, discount, price } = req.body;
+
+  if (!googleId || !productId) {
+    return res.status(400).json({ success: false, message: 'Missing googleId or productId' });
+  }
+
+  if (typeof discount !== 'number' && typeof price !== 'number') {
+    return res.status(400).json({ success: false, message: 'Provide at least one of discount or price' });
+  }
+
+  try {
+    const user = await User.findOne({ googleId });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const itemIndex = user.cart.findIndex(item => item.productId === productId);
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Item not found in cart' });
+    }
+
+    if (typeof discount === 'number') {
+      user.cart[itemIndex].discount = discount;
+    }
+
+    if (typeof price === 'number') {
+      user.cart[itemIndex].price = price;
+    }
+
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Discount/Price updated', cart: user.cart });
+  } catch (error) {
+    console.error('Error updating discount/price:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
+
 
 
 // Required for Vercel deployment
