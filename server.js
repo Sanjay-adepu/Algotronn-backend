@@ -313,7 +313,44 @@ app.post('/create-coupon', async (req, res) => {
 
 
 
+app.post('/place-order', async (req, res) => {
+  await connectDB();
+  const { googleId } = req.body;
 
+  try {
+    const user = await User.findOne({ googleId });
+
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user.cart || user.cart.length === 0) return res.status(400).json({ success: false, message: 'Cart is empty' });
+    if (!user.address) return res.status(400).json({ success: false, message: 'Address not found' });
+
+    // Generate next order number based on previous highest
+    const lastOrder = user.orders?.slice(-1)[0];
+    const lastOrderIdNum = lastOrder ? parseInt(lastOrder.orderId.replace('Order#', '')) : 20000000;
+    const nextOrderId = `Order#${lastOrderIdNum + 1}`;
+
+    const totalAmount = user.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    const newOrder = {
+      orderId: nextOrderId,
+      items: user.cart,
+      totalAmount,
+      status: 'Pending',
+      address: user.address,
+    };
+
+    user.orders = user.orders || [];
+    user.orders.push(newOrder);
+
+    user.cart = []; // Clear the cart after order
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Order placed', order: newOrder });
+  } catch (error) {
+    console.error('Order placement error:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
 
 
 
