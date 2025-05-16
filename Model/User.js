@@ -13,7 +13,7 @@ const addressSchema = new mongoose.Schema({
   state: { type: String, required: true },
 }, { _id: false });
 
-// Cart Item Schema (no description)
+// Cart Item Schema
 const cartItemSchema = new mongoose.Schema({
   productId: { type: Number, required: true },
   name: { type: String, required: true },
@@ -25,6 +25,20 @@ const cartItemSchema = new mongoose.Schema({
   inStock: { type: Boolean, default: true },
 }, { _id: false });
 
+// Order Schema
+const orderSchema = new mongoose.Schema({
+  orderId: { type: String, required: true },
+  items: [cartItemSchema],
+  totalAmount: { type: Number, required: true },
+  status: {
+    type: String,
+    enum: ['Pending', 'Completed', 'Cancelled'],
+    default: 'Pending'
+  },
+  createdAt: { type: Date, default: Date.now },
+  address: addressSchema
+}, { _id: false });
+
 // User Schema
 const userSchema = new mongoose.Schema({
   googleId: { type: String, required: true, unique: true },
@@ -32,7 +46,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   picture: String,
   address: addressSchema,
-  cart: [cartItemSchema], // Array of cart items
+  cart: [cartItemSchema],
+  orders: [orderSchema], // Add orders here
 }, { timestamps: true });
 
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);
