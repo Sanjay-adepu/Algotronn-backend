@@ -393,7 +393,7 @@ app.post('/place-order', async (req, res) => {
 
     const mailOptions = {
   from: 'algotronn.team@gmail.com',
-  to: 'adepusanjay444@gmail.com',
+  to: 'adepusanjay812@gmail.com',
   subject: `New Order Placed - ${newOrder.orderId}`,
   html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
