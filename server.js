@@ -377,8 +377,8 @@ app.post('/place-order', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'youradminemail@gmail.com',
-        pass: 'your-app-password' // Use App Password if 2FA enabled
+        user: "adepusanjay444@gmail.com",
+        pass: "lrnesuqvssiognej", // Use the generated App Password here
       }
     });
 
@@ -392,8 +392,8 @@ app.post('/place-order', async (req, res) => {
     `).join('');
 
     const mailOptions = {
-  from: 'youradminemail@gmail.com',
-  to: 'adminrecipient@gmail.com',
+  from: 'adepusanjay444@gmail.com',
+  to: 'adepusanjay444@gmail.com',
   subject: `New Order Placed - ${newOrder.orderId}`,
   html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
