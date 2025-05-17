@@ -266,7 +266,6 @@ app.post('/remove-cart-item', async (req, res) => {
 });
 
 
-
 app.post('/apply-coupon', async (req, res) => {
   await connectDB();
   const { googleId, couponCode } = req.body;
@@ -280,17 +279,34 @@ app.post('/apply-coupon', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid or expired coupon' });
     }
 
-    const cartTotal = user.cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const discount = (coupon.discountPercentage / 100) * cartTotal;
-    const finalTotal = cartTotal - discount;
+    const discountPercentage = coupon.discountPercentage;
 
-    return res.json({
+    // Update each cart item's price based on originalPrice
+    user.cart = user.cart.map(item => {
+      const original = item.originalPrice || item.price; // fallback to price if originalPrice isn't set
+      const discountedPrice = parseFloat((original * (1 - discountPercentage / 100)).toFixed(2));
+      return {
+        ...item._doc,
+        originalPrice: original,
+        price: discountedPrice,
+        discount: discountPercentage,
+      };
+    });
+
+    // Recalculate cart total
+    const updatedCartTotal = user.cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+    // Save updated cart
+    await user.save();
+
+    res.json({
       success: true,
-      discount,
-      finalTotal,
-      originalTotal: cartTotal,
+      discount: parseFloat((discountPercentage / 100 * updatedCartTotal).toFixed(2)),
+      finalTotal: updatedCartTotal,
+      originalTotal: user.cart.reduce((acc, item) => acc + item.originalPrice * item.quantity, 0),
+      updatedCart: user.cart,
       couponCode: coupon.code,
-      message: `Coupon applied: ${coupon.discountPercentage}% off`
+      message: `Coupon applied: ${discountPercentage}% off`
     });
   } catch (err) {
     console.error('Apply coupon error:', err);
