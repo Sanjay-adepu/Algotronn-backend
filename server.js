@@ -342,7 +342,6 @@ app.post('/create-coupon', async (req, res) => {
 });
 
 
-
 app.post('/place-order', async (req, res) => {
   await connectDB();
   const { googleId } = req.body;
@@ -373,67 +372,79 @@ app.post('/place-order', async (req, res) => {
     user.cart = [];
     await user.save();
 
-    // Prepare email
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: "algotronn.team@gmail.com",
-        pass: "gztfztjjibuthnpf", // Use the generated App Password here
+        pass: "gztfztjjibuthnpf", // no spaces!
       }
     });
 
-    const itemsHtml = newOrder.items.map(item => `
-      <div>
-        <p><b>${item.name}</b></p>
-        <img src="${item.imageUrl}" width="100"/><br/>
-        <p>Price: ₹${item.price} | Quantity: ${item.quantity}</p>
-        <hr/>
-      </div>
-    `).join('');
+    const plainTextItems = newOrder.items.map(item =>
+      `${item.name} - ₹${item.price} x ${item.quantity}`
+    ).join('\n');
+
+    const plainTextBody = `
+Order Confirmation - ${newOrder.orderId}
+
+Total Amount: ₹${newOrder.totalAmount}
+
+Items:
+${plainTextItems}
+
+Shipping Address:
+${newOrder.address.name}
+${newOrder.address.address}, ${newOrder.address.locality}
+${newOrder.address.landmark}
+${newOrder.address.city}, ${newOrder.address.state} - ${newOrder.address.pincode}
+Mobile: ${newOrder.address.mobile}
+Email: ${newOrder.address.email}
+    `;
 
     const mailOptions = {
-  from: 'algotronn.team@gmail.com',
-  to: 'adepusanjay812@gmail.com',
-  subject: `New Order Placed - ${newOrder.orderId}`,
-  html: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-      <div style="background-color: #0e1a35; color: white; padding: 20px; text-align: center;">
-        <h2>AlgoTRONN</h2>
-        <p style="margin: 0;">New Order Notification</p>
-      </div>
-
-      <div style="padding: 20px;">
-        <h3 style="color: #333;">Order ID: ${newOrder.orderId}</h3>
-        <p><strong>Total Amount:</strong> ₹${newOrder.totalAmount}</p>
-        
-        <h3 style="color: #333; margin-top: 30px;">Items Ordered</h3>
-        ${newOrder.items.map(item => `
-          <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px;">
-            <img src="${item.imageUrl}" alt="${item.name}" style="width: 100px; height: auto; border-radius: 4px; margin-right: 15px;" />
-            <div>
-              <p style="margin: 0; font-weight: bold;">${item.name}</p>
-              <p style="margin: 0;">Price: ₹${item.price} x ${item.quantity}</p>
-            </div>
+      from: '"AlgoTRONN Orders" <algotronn.team@gmail.com>',
+      to: 'adepusanjay812@gmail.com',
+      subject: `Order Confirmation - ${newOrder.orderId} | AlgoTRONN`,
+      text: plainTextBody,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+          <div style="background-color: #0e1a35; color: white; padding: 20px; text-align: center;">
+            <h2>AlgoTRONN</h2>
+            <p style="margin: 0;">Order Confirmation</p>
           </div>
-        `).join('')}
 
-        <h3 style="color: #333; margin-top: 30px;">Shipping Address</h3>
-        <p style="margin: 0;">
-          ${newOrder.address.name}<br/>
-          ${newOrder.address.address}, ${newOrder.address.locality}<br/>
-          ${newOrder.address.landmark}<br/>
-          ${newOrder.address.city}, ${newOrder.address.state} - ${newOrder.address.pincode}<br/>
-          <strong>Mobile:</strong> ${newOrder.address.mobile}<br/>
-          <strong>Email:</strong> ${newOrder.address.email}
-        </p>
-      </div>
+          <div style="padding: 20px;">
+            <h3 style="color: #333;">Order ID: ${newOrder.orderId}</h3>
+            <p><strong>Total Amount:</strong> ₹${newOrder.totalAmount}</p>
 
-      <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
-        <p style="margin: 0; font-size: 13px;">AlgoTRONN Admin Panel</p>
-      </div>
-    </div>
-  `
-};
+            <h3 style="color: #333; margin-top: 30px;">Items Ordered</h3>
+            ${newOrder.items.map(item => `
+              <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px;">
+                <img src="${item.imageUrl}" alt="${item.name}" style="width: 100px; height: auto; border-radius: 4px; margin-right: 15px;" />
+                <div>
+                  <p style="margin: 0; font-weight: bold;">${item.name}</p>
+                  <p style="margin: 0;">Price: ₹${item.price} x ${item.quantity}</p>
+                </div>
+              </div>
+            `).join('')}
+
+            <h3 style="color: #333; margin-top: 30px;">Shipping Address</h3>
+            <p style="margin: 0;">
+              ${newOrder.address.name}<br/>
+              ${newOrder.address.address}, ${newOrder.address.locality}<br/>
+              ${newOrder.address.landmark}<br/>
+              ${newOrder.address.city}, ${newOrder.address.state} - ${newOrder.address.pincode}<br/>
+              <strong>Mobile:</strong> ${newOrder.address.mobile}<br/>
+              <strong>Email:</strong> ${newOrder.address.email}
+            </p>
+          </div>
+
+          <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
+            <p style="margin: 0; font-size: 13px;">AlgoTRONN Admin Panel</p>
+          </div>
+        </div>
+      `
+    };
 
     await transporter.sendMail(mailOptions);
 
@@ -444,10 +455,6 @@ app.post('/place-order', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
-
-
-
-
 
 
 
