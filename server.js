@@ -378,7 +378,7 @@ app.post('/place-order', async (req, res) => {
       service: 'gmail',
       auth: {
         user: "algotronn.team@gmail.com",
-        pass: "iktz eopo ezjv dmcp", // Use the generated App Password here
+        pass: "iktzeopoezjvdmcp", // Use the generated App Password here
       }
     });
 
