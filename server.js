@@ -426,6 +426,34 @@ app.post('/update-cart-pricing', async (req, res) => {
 });
 
 
+app.post('/get-orders', async (req, res) => {
+  await connectDB();
+  const { googleId } = req.body;
+
+  if (!googleId) {
+    return res.status(400).json({ success: false, message: 'Missing googleId' });
+  }
+
+  try {
+    const user = await User.findOne({ googleId });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const orders = user.orders || [];
+
+    res.status(200).json({
+      success: true,
+      orders,
+      message: orders.length ? 'Orders fetched successfully' : 'No orders found'
+    });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
+
 
 // Required for Vercel deployment
 module.exports = app;
