@@ -5,6 +5,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const User = require('./Model/User.js'); 
 const Coupon = require('./Model/Coupon.js');
+const nodemailer = require('nodemailer');
 
 
 mongoose.set('strictQuery', true);
@@ -353,7 +354,6 @@ app.post('/place-order', async (req, res) => {
     if (!user.cart || user.cart.length === 0) return res.status(400).json({ success: false, message: 'Cart is empty' });
     if (!user.address) return res.status(400).json({ success: false, message: 'Address not found' });
 
-    // Generate next order number based on previous highest
     const lastOrder = user.orders?.slice(-1)[0];
     const lastOrderIdNum = lastOrder ? parseInt(lastOrder.orderId.replace('Order#', '')) : 20000000;
     const nextOrderId = `Order#${lastOrderIdNum + 1}`;
@@ -370,16 +370,86 @@ app.post('/place-order', async (req, res) => {
 
     user.orders = user.orders || [];
     user.orders.push(newOrder);
-
-    user.cart = []; // Clear the cart after order
+    user.cart = [];
     await user.save();
 
+    // Prepare email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'youradminemail@gmail.com',
+        pass: 'your-app-password' // Use App Password if 2FA enabled
+      }
+    });
+
+    const itemsHtml = newOrder.items.map(item => `
+      <div>
+        <p><b>${item.name}</b></p>
+        <img src="${item.imageUrl}" width="100"/><br/>
+        <p>Price: ₹${item.price} | Quantity: ${item.quantity}</p>
+        <hr/>
+      </div>
+    `).join('');
+
+    const mailOptions = {
+  from: 'youradminemail@gmail.com',
+  to: 'adminrecipient@gmail.com',
+  subject: `New Order Placed - ${newOrder.orderId}`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+      <div style="background-color: #0e1a35; color: white; padding: 20px; text-align: center;">
+        <h2>AlgoTRONN</h2>
+        <p style="margin: 0;">New Order Notification</p>
+      </div>
+
+      <div style="padding: 20px;">
+        <h3 style="color: #333;">Order ID: ${newOrder.orderId}</h3>
+        <p><strong>Total Amount:</strong> ₹${newOrder.totalAmount}</p>
+        
+        <h3 style="color: #333; margin-top: 30px;">Items Ordered</h3>
+        ${newOrder.items.map(item => `
+          <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px;">
+            <img src="${item.imageUrl}" alt="${item.name}" style="width: 100px; height: auto; border-radius: 4px; margin-right: 15px;" />
+            <div>
+              <p style="margin: 0; font-weight: bold;">${item.name}</p>
+              <p style="margin: 0;">Price: ₹${item.price} x ${item.quantity}</p>
+            </div>
+          </div>
+        `).join('')}
+
+        <h3 style="color: #333; margin-top: 30px;">Shipping Address</h3>
+        <p style="margin: 0;">
+          ${newOrder.address.name}<br/>
+          ${newOrder.address.address}, ${newOrder.address.locality}<br/>
+          ${newOrder.address.landmark}<br/>
+          ${newOrder.address.city}, ${newOrder.address.state} - ${newOrder.address.pincode}<br/>
+          <strong>Mobile:</strong> ${newOrder.address.mobile}<br/>
+          <strong>Email:</strong> ${newOrder.address.email}
+        </p>
+      </div>
+
+      <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
+        <p style="margin: 0; font-size: 13px;">AlgoTRONN Admin Panel</p>
+      </div>
+    </div>
+  `
+};
+
+    await transporter.sendMail(mailOptions);
+
     res.status(200).json({ success: true, message: 'Order placed', order: newOrder });
+
   } catch (error) {
     console.error('Order placement error:', error);
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
+
+
+
+
+
+
 
 
 app.post('/update-cart-pricing', async (req, res) => {
