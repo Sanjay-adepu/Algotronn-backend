@@ -272,7 +272,9 @@ app.post('/apply-coupon', async (req, res) => {
 
   try {
     const user = await User.findOne({ googleId });
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
     if (!coupon || (coupon.expiresAt && new Date() > coupon.expiresAt)) {
@@ -281,38 +283,44 @@ app.post('/apply-coupon', async (req, res) => {
 
     const discountPercentage = coupon.discountPercentage;
 
-    // Update each cart item's price based on originalPrice
-    user.cart = user.cart.map(item => {
-      const original = item.originalPrice || item.price; // fallback to price if originalPrice isn't set
-      const discountedPrice = parseFloat((original * (1 - discountPercentage / 100)).toFixed(2));
-      return {
+    let updatedCart = [];
+    let totalBeforeCoupon = 0;
+    let totalAfterCoupon = 0;
+
+    user.cart.forEach(item => {
+      const discountedFromAdminPrice = item.price;
+      const couponDiscountedPrice = parseFloat((discountedFromAdminPrice * (1 - discountPercentage / 100)).toFixed(2));
+      const quantity = item.quantity || 1;
+
+      totalBeforeCoupon += discountedFromAdminPrice * quantity;
+      totalAfterCoupon += couponDiscountedPrice * quantity;
+
+      updatedCart.push({
         ...item._doc,
-        originalPrice: original,
-        price: discountedPrice,
-        discount: discountPercentage,
-      };
+        price: couponDiscountedPrice,
+        discount: discountPercentage + '%'  // Optional: you can also track it as number
+      });
     });
 
-    // Recalculate cart total
-    const updatedCartTotal = user.cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
-    // Save updated cart
+    // Save updated cart with coupon-applied prices
+    user.cart = updatedCart;
     await user.save();
 
-    res.json({
+    return res.json({
       success: true,
-      discount: parseFloat((discountPercentage / 100 * updatedCartTotal).toFixed(2)),
-      finalTotal: updatedCartTotal,
-      originalTotal: user.cart.reduce((acc, item) => acc + item.originalPrice * item.quantity, 0),
-      updatedCart: user.cart,
-      couponCode: coupon.code,
-      message: `Coupon applied: ${discountPercentage}% off`
+      message: `Coupon applied: ${discountPercentage}% off on current prices`,
+      originalTotal: parseFloat(totalBeforeCoupon.toFixed(2)),
+      finalTotal: parseFloat(totalAfterCoupon.toFixed(2)),
+      discount: parseFloat((totalBeforeCoupon - totalAfterCoupon).toFixed(2)),
+      updatedCart: updatedCart,
+      couponCode: coupon.code
     });
   } catch (err) {
     console.error('Apply coupon error:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 
 
