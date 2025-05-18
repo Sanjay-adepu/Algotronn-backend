@@ -403,7 +403,7 @@ Email: ${newOrder.address.email}
 
     const mailOptions = {
       from: 'adepusanjay444@gmail.com',
-      to: 'adepusampath40@gmail.com',
+      to: 'adepusanjay192@gmail.com',
       subject: `Order Confirmation - ${newOrder.orderId} | AlgoTRONN`,
       text: plainTextBody,
       html: `
