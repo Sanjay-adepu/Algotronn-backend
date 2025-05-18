@@ -354,8 +354,8 @@ app.post('/place-order', async (req, res) => {
     if (!user.address) return res.status(400).json({ success: false, message: 'Address not found' });
 
     const lastOrder = user.orders?.slice(-1)[0];
-    const lastOrderIdNum = lastOrder ? parseInt(lastOrder.orderId.replace('Order#', '')) : 20000000;
-    const nextOrderId = `Order#${lastOrderIdNum + 1}`;
+  const lastOrderIdNum = lastOrder ? parseInt(lastOrder.orderId) : 20000000;
+const nextOrderId = (lastOrderIdNum + 1).toString();
 
     const totalAmount = user.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -437,6 +437,15 @@ Email: ${newOrder.address.email}
               <strong>Mobile:</strong> ${newOrder.address.mobile}<br/>
               <strong>Email:</strong> ${newOrder.address.email}
             </p>
+
+
+        <a href="https://algotronn-backend.vercel.app/mark-delivered/${newOrder.orderId}" 
+   style="display:inline-block; padding:10px 20px; background-color:#28a745; color:white; text-decoration:none; border-radius:5px; margin-top:20px;">
+   Mark as Delivered
+</a>
+
+
+
           </div>
 
           <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
@@ -530,6 +539,32 @@ app.post('/get-orders', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
+
+
+app.get('/mark-delivered/:orderId', async (req, res) => {
+  await connectDB();
+  const { orderId } = req.params;
+
+  try {
+    const user = await User.findOne({ "orders.orderId": orderId });
+    if (!user) return res.status(404).send('User with this order not found');
+
+    const order = user.orders.find(o => o.orderId === orderId);
+    if (!order) return res.status(404).send('Order not found');
+
+    order.status = 'Completed';
+    await user.save();
+
+    res.send(`Order ${orderId} has been marked as Delivered successfully.`);
+  } catch (err) {
+    console.error('Mark Delivered Error:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+
+
+
 
 
 // Required for Vercel deployment
