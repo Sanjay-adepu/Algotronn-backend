@@ -375,8 +375,8 @@ app.post('/place-order', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: "algotronn.team@gmail.com",
-        pass: "gztfztjjibuthnpf", // no spaces!
+                user: "adepusanjay444@gmail.com",
+        pass: "lrnesuqvssiognej"
       }
     });
 
@@ -402,8 +402,8 @@ Email: ${newOrder.address.email}
     `;
 
     const mailOptions = {
-      from: '"AlgoTRONN Orders" <algotronn.team@gmail.com>',
-      to: 'adepusanjay192@gmail.com',
+      from: '"AlgoTRONN Team" <adepusanjay444@gmail.com>',
+      to: 'adepusampath40@gmail.com',
       subject: `Order Confirmation - ${newOrder.orderId} | AlgoTRONN`,
       text: plainTextBody,
       html: `
