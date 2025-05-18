@@ -342,6 +342,7 @@ app.post('/create-coupon', async (req, res) => {
 });
 
 
+
 app.post('/place-order', async (req, res) => {
   await connectDB();
   const { googleId } = req.body;
@@ -354,8 +355,16 @@ app.post('/place-order', async (req, res) => {
     if (!user.address) return res.status(400).json({ success: false, message: 'Address not found' });
 
     const lastOrder = user.orders?.slice(-1)[0];
-  const lastOrderIdNum = lastOrder ? parseInt(lastOrder.orderId) : 20000000;
-const nextOrderId = (lastOrderIdNum + 1).toString();
+    
+    let lastOrderIdNum = 20000000;
+    if (lastOrder && lastOrder.orderId) {
+      const parsedId = parseInt(lastOrder.orderId.toString().replace(/[^\d]/g, ''));
+      if (!isNaN(parsedId)) {
+        lastOrderIdNum = parsedId;
+      }
+    }
+
+    const nextOrderId = (lastOrderIdNum + 1).toString();
 
     const totalAmount = user.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -375,7 +384,7 @@ const nextOrderId = (lastOrderIdNum + 1).toString();
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-                user: "adepusanjay444@gmail.com",
+        user: "adepusanjay444@gmail.com",
         pass: "lrnesuqvssiognej"
       }
     });
@@ -438,14 +447,10 @@ Email: ${newOrder.address.email}
               <strong>Email:</strong> ${newOrder.address.email}
             </p>
 
-
-        <a href="https://algotronn-backend.vercel.app/mark-delivered/${newOrder.orderId}" 
-   style="display:inline-block; padding:10px 20px; background-color:#28a745; color:white; text-decoration:none; border-radius:5px; margin-top:20px;">
-   Mark as Delivered
-</a>
-
-
-
+            <a href="https://algotronn-backend.vercel.app/mark-delivered/${newOrder.orderId}" 
+              style="display:inline-block; padding:10px 20px; background-color:#28a745; color:white; text-decoration:none; border-radius:5px; margin-top:20px;">
+              Mark as Delivered
+            </a>
           </div>
 
           <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
@@ -464,6 +469,8 @@ Email: ${newOrder.address.email}
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
+
+
 
 
 
