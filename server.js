@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const User = require('./Model/User.js'); 
 const Coupon = require('./Model/Coupon.js');
 const nodemailer = require('nodemailer');
+const Counter = require('./models/Counter.js');
 
 
 mongoose.set('strictQuery', true);
@@ -354,17 +355,14 @@ app.post('/place-order', async (req, res) => {
     if (!user.cart || user.cart.length === 0) return res.status(400).json({ success: false, message: 'Cart is empty' });
     if (!user.address) return res.status(400).json({ success: false, message: 'Address not found' });
 
-    const lastOrder = user.orders?.slice(-1)[0];
-    
-    let lastOrderIdNum = 20000000;
-    if (lastOrder && lastOrder.orderId) {
-      const parsedId = parseInt(lastOrder.orderId.toString().replace(/[^\d]/g, ''));
-      if (!isNaN(parsedId)) {
-        lastOrderIdNum = parsedId;
-      }
-    }
+    // Get next unique orderId from global counter
+    const counter = await Counter.findOneAndUpdate(
+      { name: 'orderId' },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true }
+    );
 
-    const nextOrderId = (lastOrderIdNum + 1).toString();
+    const nextOrderId = counter.value.toString();
 
     const totalAmount = user.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -376,11 +374,11 @@ app.post('/place-order', async (req, res) => {
       address: user.address,
     };
 
-    user.orders = user.orders || [];
     user.orders.push(newOrder);
     user.cart = [];
     await user.save();
 
+    // Email config
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
