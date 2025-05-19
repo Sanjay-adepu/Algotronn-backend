@@ -570,6 +570,34 @@ app.get('/mark-delivered/:orderId', async (req, res) => {
 });
 
 
+app.get('/mark-cancelled/:orderId', async (req, res) => {
+  await connectDB();
+  const { orderId } = req.params;
+
+  try {
+    const user = await User.findOne({ "orders.orderId": orderId });
+    if (!user) return res.status(404).send('User with this order not found');
+
+    const order = user.orders.find(o => o.orderId === orderId);
+    if (!order) return res.status(404).send('Order not found');
+
+    // Optional: Only allow cancellation if order is not already completed/cancelled
+    if (order.status === 'Completed') {
+      return res.status(400).send('Cannot cancel a completed order');
+    }
+    if (order.status === 'Cancelled') {
+      return res.status(400).send('Order is already cancelled');
+    }
+
+    order.status = 'Cancelled';
+    await user.save();
+
+    res.send(`Order ${orderId} has been marked as Cancelled successfully.`);
+  } catch (err) {
+    console.error('Mark Cancelled Error:', err);
+    res.status(500).send('Server error');
+  }
+});
 
 
 
