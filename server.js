@@ -364,7 +364,7 @@ const counter = await Counter.findOneAndUpdate(
 );
 
 // Ensure orderId is at least 5 digits with "ORD-" prefix
-const nextOrderId = `ORD-${counter.value.toString().padStart(5, '0')}`;
+const nextOrderId = `ORD${counter.value.toString().padStart(5, '0')}`;
 
 
     const totalAmount = user.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
