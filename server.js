@@ -581,7 +581,6 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     const order = user.orders.find(o => o.orderId === orderId);
     if (!order) return res.status(404).send('Order not found');
 
-    // Optional: Only allow cancellation if order is not already completed/cancelled
     if (order.status === 'Completed') {
       return res.status(400).send('Cannot cancel a completed order');
     }
@@ -592,13 +591,72 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     order.status = 'Cancelled';
     await user.save();
 
-    res.send(`Order ${orderId} has been marked as Cancelled successfully.`);
+    // Send cancellation email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: "adepusanjay444@gmail.com",
+        pass: "lrnesuqvssiognej"
+      }
+    });
+
+    const itemList = order.items.map(item => `${item.name} - ₹${item.price} x ${item.quantity}`).join('\n');
+
+    const htmlItems = order.items.map(item => `
+      <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px;">
+        <img src="${item.imageUrl}" alt="${item.name}" style="width: 100px; height: auto; border-radius: 4px; margin-right: 15px;" />
+        <div>
+          <p style="margin: 0; font-weight: bold;">${item.name}</p>
+          <p style="margin: 0;">Price: ₹${item.price} x ${item.quantity}</p>
+        </div>
+      </div>
+    `).join('');
+
+    const mailOptions = {
+      from: 'adepusanjay444@gmail.com',
+      to: 'adepusanjay444@gmail.com',
+      subject: `Order Cancelled - ${order.orderId} | AlgoTRONN`,
+      text: `Order ${order.orderId} has been cancelled.\n\nItems:\n${itemList}\n\nTotal: ₹${order.totalAmount}\n`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+          <div style="background-color: #8b0000; color: white; padding: 20px; text-align: center;">
+            <h2>AlgoTRONN</h2>
+            <p style="margin: 0;">Order Cancelled</p>
+          </div>
+
+          <div style="padding: 20px;">
+            <h3 style="color: #333;">Order ID: ${order.orderId}</h3>
+            <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+
+            <h3 style="color: #333; margin-top: 30px;">Items Ordered</h3>
+            ${htmlItems}
+
+            <h3 style="color: #333; margin-top: 30px;">Shipping Address</h3>
+            <p style="margin: 0;">
+              ${order.address.name}<br/>
+              ${order.address.address}, ${order.address.locality}<br/>
+              ${order.address.landmark}<br/>
+              ${order.address.city}, ${order.address.state} - ${order.address.pincode}<br/>
+              <strong>Mobile:</strong> ${order.address.mobile}<br/>
+              <strong>Email:</strong> ${order.address.email}
+            </p>
+          </div>
+
+          <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
+            <p style="margin: 0; font-size: 13px;">AlgoTRONN Admin Panel</p>
+          </div>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.send(`Order ${orderId} has been marked as Cancelled and email sent successfully.`);
   } catch (err) {
     console.error('Mark Cancelled Error:', err);
     res.status(500).send('Server error');
   }
 });
-
 
 
 
