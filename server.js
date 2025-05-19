@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const User = require('./Model/User.js'); 
 const Coupon = require('./Model/Coupon.js');
 const nodemailer = require('nodemailer');
-const Counter = require('./Models/Counter.js');
+const Counter = require('./Model/Counter.js');
 
 
 mongoose.set('strictQuery', true);
