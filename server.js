@@ -355,14 +355,17 @@ app.post('/place-order', async (req, res) => {
     if (!user.cart || user.cart.length === 0) return res.status(400).json({ success: false, message: 'Cart is empty' });
     if (!user.address) return res.status(400).json({ success: false, message: 'Address not found' });
 
+  
     // Get next unique orderId from global counter
-    const counter = await Counter.findOneAndUpdate(
-      { name: 'orderId' },
-      { $inc: { value: 1 } },
-      { new: true, upsert: true }
-    );
+const counter = await Counter.findOneAndUpdate(
+  { name: 'orderId' },
+  { $inc: { value: 1 } },
+  { new: true, upsert: true }
+);
 
-    const nextOrderId = counter.value.toString();
+// Ensure orderId is at least 5 digits with "ORD-" prefix
+const nextOrderId = `ORD-${counter.value.toString().padStart(5, '0')}`;
+
 
     const totalAmount = user.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
