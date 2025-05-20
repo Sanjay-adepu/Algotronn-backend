@@ -385,8 +385,8 @@ const nextOrderId = `ORD${counter.value.toString().padStart(5, '0')}`;
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: "adepusanjay444@gmail.com",
-        pass: "lrnesuqvssiognej"
+        user:"algotronn.team@gmail.com",
+        pass:"iktzeopoezjvdmcp"
       }
     });
 
@@ -412,8 +412,8 @@ Email: ${newOrder.address.email}
     `;
 
     const mailOptions = {
-      from: 'adepusanjay444@gmail.com',
-      to: 'adepusanjay444@gmail.com',
+      from: 'algotronn.team@gmail.com',
+      to: 'algotronn.team@gmail.com',
       subject: `Order Confirmation - ${newOrder.orderId} | AlgoTRONN`,
       text: plainTextBody,
       html: `
@@ -596,8 +596,8 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: "adepusanjay444@gmail.com",
-        pass: "lrnesuqvssiognej"
+        user:"algotronn.team@gmail.com",
+        pass:"iktzeopoezjvdmcp"
       }
     });
 
@@ -614,8 +614,8 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     `).join('');
 
     const mailOptions = {
-      from: 'adepusanjay444@gmail.com',
-      to: 'adepusanjay444@gmail.com',
+      from: 'algotronn.team@gmail.com',
+      to: 'algotronn.team@gmail.com',
       subject: `Order Cancelled - ${order.orderId} | AlgoTRONN`,
       text: `Order ${order.orderId} has been cancelled.\n\nItems:\n${itemList}\n\nTotal: ₹${order.totalAmount}\n`,
       html: `
