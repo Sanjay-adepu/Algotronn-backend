@@ -660,6 +660,46 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
 });
 
 
+app.post('/get-all-orders-by-date', async (req, res) => {
+  await connectDB();
+  const { date } = req.body; // expected format: "2025-05-16"
+
+  if (!date) return res.status(400).json({ success: false, message: 'Date is required' });
+
+  try {
+    const users = await User.find({}, 'orders googleId name email'); // only fetch necessary fields
+
+    const targetDate = new Date(date);
+    const filteredOrders = [];
+
+    users.forEach(user => {
+      user.orders.forEach(order => {
+        const orderDate = new Date(order.createdAt);
+        const isSameDate =
+          orderDate.getFullYear() === targetDate.getFullYear() &&
+          orderDate.getMonth() === targetDate.getMonth() &&
+          orderDate.getDate() === targetDate.getDate();
+
+        if (isSameDate) {
+          filteredOrders.push({
+            ...order.toObject(),
+            userName: user.name,
+            userEmail: user.email,
+            googleId: user.googleId
+          });
+        }
+      });
+    });
+
+    res.status(200).json({ success: true, count: filteredOrders.length, orders: filteredOrders });
+
+  } catch (error) {
+    console.error('Get orders by date error:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
+
+
 
 // Required for Vercel deployment
 module.exports = app;
