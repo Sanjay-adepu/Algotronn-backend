@@ -700,6 +700,56 @@ app.post('/get-all-orders-by-date', async (req, res) => {
 });
 
 
+app.post('/get-orders-by-date', async (req, res) => {
+  await connectDB();
+
+  const { date, status } = req.body;
+
+  if (!date || !status) {
+    return res.status(400).json({ success: false, message: 'Date and status are required' });
+  }
+
+  try {
+    // Convert the input date to start and end of the day
+    const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+    // Find users with orders matching the status and date
+    const users = await User.find({
+      "orders": {
+        $elemMatch: {
+          status: status,
+          createdAt: { $gte: startOfDay, $lte: endOfDay }
+        }
+      }
+    }, {
+      googleId: 1,
+      name: 1,
+      orders: {
+        $filter: {
+          input: "$orders",
+          as: "order",
+          cond: {
+            $and: [
+              { $eq: ["$$order.status", status] },
+              { $gte: ["$$order.createdAt", startOfDay] },
+              { $lte: ["$$order.createdAt", endOfDay] }
+            ]
+          }
+        }
+      }
+    });
+
+    res.json({ success: true, users });
+  } catch (error) {
+    console.error('Error fetching orders by date:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
+
 
 // Required for Vercel deployment
 module.exports = app;
