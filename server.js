@@ -20,7 +20,7 @@ const client = new OAuth2Client("741240365062-r2te32gvukmekm4r55l4ishc0mhsk4f9.a
 const app = express();
 app.use(bodyParser.json());
 app.use(cors({
-  origin: ["https://www.falconai.space", "http://localhost:5173"],
+  origin: ["https://algotronn.vercel.app", "http://localhost:5173"],
   methods: ["GET", "POST"]
 }));
 
