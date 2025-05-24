@@ -660,27 +660,33 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
 });
 
 
-app.post('/get-all-orders-by-date', async (req, res) => {
+app.post('/get-orders', async (req, res) => {
   await connectDB();
-  const { date } = req.body; // expected format: "2025-05-16"
+  const { date, status } = req.body;
 
-  if (!date) return res.status(400).json({ success: false, message: 'Date is required' });
+  if (!date) {
+    return res.status(400).json({ success: false, message: 'Date is required' });
+  }
 
   try {
-    const users = await User.find({}, 'orders googleId name email'); // only fetch necessary fields
-
     const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+    const users = await User.find({}, 'orders googleId name email');
+
     const filteredOrders = [];
 
     users.forEach(user => {
       user.orders.forEach(order => {
         const orderDate = new Date(order.createdAt);
         const isSameDate =
-          orderDate.getFullYear() === targetDate.getFullYear() &&
-          orderDate.getMonth() === targetDate.getMonth() &&
-          orderDate.getDate() === targetDate.getDate();
+          orderDate >= startOfDay &&
+          orderDate <= endOfDay;
 
-        if (isSameDate) {
+        const isStatusMatch = !status || order.status === status;
+
+        if (isSameDate && isStatusMatch) {
           filteredOrders.push({
             ...order.toObject(),
             userName: user.name,
@@ -691,63 +697,17 @@ app.post('/get-all-orders-by-date', async (req, res) => {
       });
     });
 
-    res.status(200).json({ success: true, count: filteredOrders.length, orders: filteredOrders });
+    res.status(200).json({
+      success: true,
+      count: filteredOrders.length,
+      orders: filteredOrders
+    });
 
   } catch (error) {
-    console.error('Get orders by date error:', error);
+    console.error('Get orders error:', error);
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
-
-
-app.post('/get-orders-by-date', async (req, res) => {
-  await connectDB();
-
-  const { date, status } = req.body;
-
-  if (!date || !status) {
-    return res.status(400).json({ success: false, message: 'Date and status are required' });
-  }
-
-  try {
-    // Convert the input date to start and end of the day
-    const targetDate = new Date(date);
-    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
-
-    // Find users with orders matching the status and date
-    const users = await User.find({
-      "orders": {
-        $elemMatch: {
-          status: status,
-          createdAt: { $gte: startOfDay, $lte: endOfDay }
-        }
-      }
-    }, {
-      googleId: 1,
-      name: 1,
-      orders: {
-        $filter: {
-          input: "$orders",
-          as: "order",
-          cond: {
-            $and: [
-              { $eq: ["$$order.status", status] },
-              { $gte: ["$$order.createdAt", startOfDay] },
-              { $lte: ["$$order.createdAt", endOfDay] }
-            ]
-          }
-        }
-      }
-    });
-
-    res.json({ success: true, users });
-  } catch (error) {
-    console.error('Error fetching orders by date:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
 
 
 
