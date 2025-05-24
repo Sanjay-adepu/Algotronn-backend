@@ -748,7 +748,40 @@ res.status(500).json({ success: false, message: 'Server error' });
 });
 
 
+// Route to fetch order details by orderId
+app.post('/get-order-details', async (req, res) => {
+  await connectDB();
+  const { orderId } = req.body;
 
+  if (!orderId) {
+    return res.status(400).json({ success: false, message: 'orderId is required' });
+  }
+
+  try {
+    // Search for the user who has the order
+    const user = await User.findOne({ 'orders.orderId': orderId });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    // Find the specific order from the user's orders
+    const order = user.orders.find(o => o.orderId === orderId);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found in user record' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Order details fetched successfully',
+      order,
+    });
+  } catch (error) {
+    console.error('Error fetching order:', error);
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
 
 
 // Required for Vercel deployment
