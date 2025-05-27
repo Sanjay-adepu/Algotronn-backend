@@ -784,5 +784,31 @@ app.post('/get-order-details', async (req, res) => {
 });
 
 
+app.get('/users', async (req, res) => {
+  await connectDB();
+
+  try {
+    const oneWeekAgo = new Date(Date.now() - 7*24*60*60*1000);
+
+    const newUsers = await User.find({ createdAt: { $gte: oneWeekAgo } });
+    const oldUsers = await User.find({ createdAt: { $lt: oneWeekAgo } });
+
+    res.json({
+      newUserCount: newUsers.length,
+      oldUserCount: oldUsers.length,
+      newUsers: newUsers.map(u => ({ name: u.name, email: u.email, mobile: u.address?.mobile })),
+      oldUsers: oldUsers.map(u => ({ name: u.name, email: u.email, mobile: u.address?.mobile }))
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+
+
 // Required for Vercel deployment
 module.exports = app;
