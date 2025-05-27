@@ -47,7 +47,12 @@ const userSchema = new mongoose.Schema({
   picture: String,
   address: addressSchema,
   cart: [cartItemSchema],
-  orders: [orderSchema], // Add orders here
+  orders: [orderSchema],
 }, { timestamps: true });
 
-module.exports = mongoose.models.User || mongoose.model('User', userSchema);
+// Index for faster queries on createdAt
+userSchema.index({ createdAt: 1 });
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+module.exports = User;
