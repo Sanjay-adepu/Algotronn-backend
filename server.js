@@ -7,7 +7,11 @@ const User = require('./Model/User.js');
 const Coupon = require('./Model/Coupon.js');
 const nodemailer = require('nodemailer');
 const Counter = require('./Model/Counter.js');
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
 
+require("dotenv").config();
 
 
 // Configure Cloudinary
