@@ -9,6 +9,18 @@ const nodemailer = require('nodemailer');
 const Counter = require('./Model/Counter.js');
 
 
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: "dppiuypop",
+  api_key: "412712715735329",
+  api_secret: "m04IUY0-awwtr4YoS-1xvxOOIzU"
+});
+
+
+
+
+
 mongoose.set('strictQuery', true);
 
 
@@ -39,6 +51,97 @@ async function connectDB() {
     console.error("MongoDB connection error:", error);
   }
 }
+
+
+
+// Mongoose Schema
+const productSchema = new mongoose.Schema({
+  name: String,
+  imageUrl: String,
+  description: String,
+  type: { type: String, enum: ['public', 'duplicate'], required: true },
+  stock: Boolean,
+
+  // For 'duplicate'
+  price: Number,
+  originalPrice: Number,
+  discount: Number,
+
+  // For 'public'
+  summary: String,
+  dailyPL: String,
+  publicType: String
+});
+
+const Product = mongoose.model("Product", productSchema);
+
+
+// Multer setup (memory storage)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = "./uploads/";
+    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+const upload = multer({ storage });
+
+// POST route to add a product
+app.post("/add-product", upload.single("image"), async (req, res) => {
+  try {
+    const {
+      name, description, type, stock,
+      price, originalPrice, discount,
+      summary, dailyPL, publicType
+    } = req.body;
+
+    // Upload image to Cloudinary
+    const imagePath = req.file.path;
+    const cloudinaryResult = await cloudinary.uploader.upload(imagePath, {
+      folder: "products"
+    });
+
+    const imageUrl = cloudinaryResult.secure_url;
+
+    // Construct product object
+    const baseProduct = {
+      name,
+      description,
+      imageUrl,
+      type,
+      stock: stock === 'true' || stock === true
+    };
+
+    if (type === 'duplicate') {
+      baseProduct.price = Number(price);
+      baseProduct.originalPrice = Number(originalPrice);
+      baseProduct.discount = Number(discount);
+    } else if (type === 'public') {
+      baseProduct.summary = summary;
+      baseProduct.dailyPL = dailyPL;
+      baseProduct.publicType = publicType;
+    }
+
+    const newProduct = new Product(baseProduct);
+    await newProduct.save();
+
+    // Remove uploaded file from local storage
+    fs.unlinkSync(imagePath);
+
+    res.status(201).json({ success: true, product: newProduct });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+
+
+
 
 
 // POST /api/user/cart
