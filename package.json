@@ -23,6 +23,6 @@
  "uuid": "^11.1.0",
     "fs": "^0.0.1-security",
     "dotenv": "^16.4.7",
-"cloudinary": "^2.6.0"
+"cloudinary": "^1.30.0"
   }
 }
