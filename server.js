@@ -9,19 +9,26 @@ const nodemailer = require('nodemailer');
 const Counter = require('./Model/Counter.js');
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
-const fs = require("fs");
-
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 require("dotenv").config();
 
 
-// Configure Cloudinary
+// Cloudinary Configuration
 cloudinary.config({
   cloud_name: "dppiuypop",
   api_key: "412712715735329",
   api_secret: "m04IUY0-awwtr4YoS-1xvxOOIzU"
 });
 
-
+// Multer Cloudinary Storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'products', // Cloudinary folder
+    allowed_formats: ['jpg', 'jpeg', 'png'],
+  },
+});
+const upload = multer({ storage });
 
 
 
@@ -58,42 +65,27 @@ async function connectDB() {
 
 
 
-// Mongoose Schema
+// Mongoose Schema for Product
 const productSchema = new mongoose.Schema({
   name: String,
   imageUrl: String,
   description: String,
   type: { type: String, enum: ['public', 'duplicate'], required: true },
   stock: Boolean,
-
   // For 'duplicate'
   price: Number,
   originalPrice: Number,
   discount: Number,
-
   // For 'public'
   summary: String,
   dailyPL: String,
   publicType: String
 });
-
 const Product = mongoose.model("Product", productSchema);
 
 
-// Multer setup (memory storage)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = "./uploads/";
-    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  }
-});
-const upload = multer({ storage });
 
-// POST route to add a product
+// Route to add product with Cloudinary upload
 app.post("/add-product", upload.single("image"), async (req, res) => {
   try {
     const {
@@ -102,15 +94,12 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
       summary, dailyPL, publicType
     } = req.body;
 
-    // Upload image to Cloudinary
-    const imagePath = req.file.path;
-    const cloudinaryResult = await cloudinary.uploader.upload(imagePath, {
-      folder: "products"
-    });
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({ success: false, message: "Image upload failed" });
+    }
 
-    const imageUrl = cloudinaryResult.secure_url;
+    const imageUrl = req.file.path;
 
-    // Construct product object
     const baseProduct = {
       name,
       description,
@@ -132,16 +121,13 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
     const newProduct = new Product(baseProduct);
     await newProduct.save();
 
-    // Remove uploaded file from local storage
-    fs.unlinkSync(imagePath);
-
     res.status(201).json({ success: true, product: newProduct });
+
   } catch (error) {
     console.error("Error adding product:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 
 
