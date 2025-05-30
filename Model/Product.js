@@ -12,6 +12,6 @@ discount: Number,
 // For 'public'
 summary: String,
 dailyPL: String,
-publicType: String
+publicType: String 
 });
 const Product = mongoose.model("Product", productSchema);
