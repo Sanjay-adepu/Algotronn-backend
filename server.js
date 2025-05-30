@@ -132,13 +132,13 @@ app.post('/create-person', async (req, res) => {
 // Route to add product with Cloudinary upload
 app.post("/add-product", upload.single("image"), async (req, res) => {
   try {
-    // ✅ Ensure MongoDB connection
     await connectDB();
 
     const {
       name, description, type, stock,
       price, originalPrice, discount,
-      summary, dailyPL, publicType
+      summary, dailyPL, publicType,
+      isPriced
     } = req.body;
 
     if (!req.file || !req.file.path) {
@@ -152,17 +152,17 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
       description,
       imageUrl,
       type,
-      stock: stock === 'true' || stock === true
+      stock: stock === 'true' || stock === true,
+      summary,
+      dailyPL,
+      publicType,
+      isPriced: isPriced === 'true' || isPriced === true // ✅ Convert to Boolean
     };
 
     if (type === 'duplicate') {
       baseProduct.price = Number(price);
       baseProduct.originalPrice = Number(originalPrice);
       baseProduct.discount = Number(discount);
-    } else if (type === 'public') {
-      baseProduct.summary = summary;
-      baseProduct.dailyPL = dailyPL;
-      baseProduct.publicType = publicType;
     }
 
     const newProduct = new Product(baseProduct);
@@ -175,6 +175,7 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 // ✅ Get all products
