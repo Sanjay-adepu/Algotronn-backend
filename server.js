@@ -69,6 +69,9 @@ async function connectDB() {
 // Route to add product with Cloudinary upload
 app.post("/add-product", upload.single("image"), async (req, res) => {
   try {
+    // ✅ Ensure MongoDB connection
+    await connectDB();
+
     const {
       name, description, type, stock,
       price, originalPrice, discount,
@@ -109,7 +112,6 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 
 
