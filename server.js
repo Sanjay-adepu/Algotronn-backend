@@ -12,7 +12,7 @@ const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 require("dotenv").config();
-
+const Person = require('./Model/Person.js');
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -63,6 +63,69 @@ async function connectDB() {
     console.error("MongoDB connection error:", error);
   }
 }
+
+
+app.post('/login', async (req, res) => {
+  await connectDB();
+  const { username, password } = req.body;
+
+  try {
+    const person = await Person.findOne({ username });
+
+    if (!person || person.password !== password) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    return res.status(200).json({ success: true, message: "Login successful", person });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+app.post('/change-password', async (req, res) => {
+  await connectDB();
+  const { username, oldPassword, newPassword } = req.body;
+
+  try {
+    const person = await Person.findOne({ username });
+
+    if (!person || person.password !== oldPassword) {
+      return res.status(401).json({ success: false, message: "Old password is incorrect" });
+    }
+
+    person.password = newPassword;
+    await person.save();
+
+    return res.status(200).json({ success: true, message: "Password changed successfully" });
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+app.post('/create-person', async (req, res) => {
+  await connectDB();
+  const { username, password } = req.body;
+
+  try {
+    const existingPerson = await Person.findOne({ username });
+    if (existingPerson) return res.status(400).json({ success: false, message: "User already exists" });
+
+    const newPerson = new Person({ username, password });
+    await newPerson.save();
+
+    res.status(201).json({ success: true, message: "Person created successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+
+
 
 
 
