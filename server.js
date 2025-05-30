@@ -26,7 +26,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'products', // Cloudinary folder
-    allowed_formats: ['jpg', 'jpeg', 'png'],
+    allowed_formats: ['jpg', 'jpeg', 'png','webp'],
   },
 });
 const upload = multer({ storage });
