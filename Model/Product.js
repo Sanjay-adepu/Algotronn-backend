@@ -12,7 +12,8 @@ const productSchema = new mongoose.Schema({
   summary: String,
   dailyPL: String,
   publicType: String,
+  isPriced: Boolean,
+  tradetronLink: String // ✅ New field
 });
 
-// ✅ Ensure this line
-module.exports = mongoose.model("Product", productSchema); 
+module.exports = mongoose.model("Product", productSchema);
