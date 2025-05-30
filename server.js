@@ -114,6 +114,39 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
 });
 
 
+// ✅ Get all products
+app.get('/products', async (req, res) => {
+  try {
+    await connectDB(); // Ensure DB is connected
+    const products = await Product.find().sort({ createdAt: -1 }); // Optional: latest first
+    res.status(200).json({ success: true, products });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ success: false, message: "Failed to get products" });
+  }
+});
+
+// ✅ Delete a product by ID
+app.delete('/product/:id', async (req, res) => {
+  try {
+    await connectDB(); // Ensure DB is connected
+    const productId = req.params.id;
+    
+    const deletedProduct = await Product.findByIdAndDelete(productId);
+
+    if (!deletedProduct) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ success: false, message: "Failed to delete product" });
+  }
+});
+
+
+
 
 
 
