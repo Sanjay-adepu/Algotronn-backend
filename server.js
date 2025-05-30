@@ -138,7 +138,8 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
       name, description, type, stock,
       price, originalPrice, discount,
       summary, dailyPL, publicType,
-      isPriced, tradetronLink // ✅ Added here
+      isPriced, tradetronLink,
+      sorttype  // <-- new field here
     } = req.body;
 
     if (!req.file || !req.file.path) {
@@ -157,7 +158,8 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
       dailyPL,
       publicType,
       isPriced: isPriced === 'true' || isPriced === true,
-      tradetronLink // ✅ Add to product object
+      tradetronLink,
+      sorttype  // <-- add here
     };
 
     if (type === 'duplicate') {
@@ -176,6 +178,10 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+
+
+
 
 
 
