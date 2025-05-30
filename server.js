@@ -138,7 +138,7 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
       name, description, type, stock,
       price, originalPrice, discount,
       summary, dailyPL, publicType,
-      isPriced
+      isPriced, tradetronLink // ✅ Added here
     } = req.body;
 
     if (!req.file || !req.file.path) {
@@ -156,7 +156,8 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
       summary,
       dailyPL,
       publicType,
-      isPriced: isPriced === 'true' || isPriced === true // ✅ Convert to Boolean
+      isPriced: isPriced === 'true' || isPriced === true,
+      tradetronLink // ✅ Add to product object
     };
 
     if (type === 'duplicate') {
