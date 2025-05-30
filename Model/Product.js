@@ -1,4 +1,8 @@
 // Mongoose Schema for Product
+const mongoose = require('mongoose');
+
+
+
 const productSchema = new mongoose.Schema({
 name: String,
 imageUrl: String,
