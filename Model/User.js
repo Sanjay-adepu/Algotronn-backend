@@ -15,11 +15,11 @@ const addressSchema = new mongoose.Schema({
 
 // Cart Item Schema
 const cartItemSchema = new mongoose.Schema({
-  productId: { type: Number, required: true },
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true }, // ✅ FIXED
   name: { type: String, required: true },
-  price: { type: Number, required: true },       // discounted price
-  originalPrice: { type: Number },               // for discount calc
-  discount: { type: Number },                    // e.g., 38
+  price: { type: Number, required: true },
+  originalPrice: { type: Number },
+  discount: { type: Number },
   quantity: { type: Number, default: 1 },
   imageUrl: { type: String },
   inStock: { type: Boolean, default: true },
@@ -50,9 +50,10 @@ const userSchema = new mongoose.Schema({
   orders: [orderSchema],
 }, { timestamps: true });
 
-// Index for faster queries on createdAt
+// Index for faster queries
 userSchema.index({ createdAt: 1 });
 
+// Create and export model
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 module.exports = User;
