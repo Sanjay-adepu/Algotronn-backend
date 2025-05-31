@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
+  id: { type: Number, unique: true }, // Auto-incremented ID
   name: String,
   imageUrl: String,
   description: String,
@@ -14,7 +15,7 @@ const productSchema = new mongoose.Schema({
   publicType: String,
   isPriced: Boolean,
   tradetronLink: String,
-  sorttype: String  // <-- new field
+  sorttype: String
 });
 
 module.exports = mongoose.model("Product", productSchema);
