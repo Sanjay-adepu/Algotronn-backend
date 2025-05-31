@@ -2,58 +2,58 @@ const mongoose = require('mongoose');
 
 // Address Schema
 const addressSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  mobile: { type: String, required: true },
-  email: { type: String, required: true },
-  address: { type: String, required: true },
-  locality: { type: String, default: '' },
-  landmark: { type: String, default: '' },
-  pincode: { type: String, required: true },
-  city: { type: String, required: true },
-  state: { type: String, required: true },
+name: { type: String, required: true },
+mobile: { type: String, required: true },
+email: { type: String, required: true },
+address: { type: String, required: true },
+locality: { type: String, default: '' },
+landmark: { type: String, default: '' },
+pincode: { type: String, required: true },
+city: { type: String, required: true },
+state: { type: String, required: true },
 }, { _id: false });
 
 // Cart Item Schema
 const cartItemSchema = new mongoose.Schema({
-  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true }, // ✅ FIXED
-  name: { type: String, required: true },
-  price: { type: Number, required: true },
-  originalPrice: { type: Number },
-  discount: { type: Number },
-  quantity: { type: Number, default: 1 },
-  imageUrl: { type: String },
-  inStock: { type: Boolean, default: true },
+productId: { type: Number, required: true },
+name: { type: String, required: true },
+price: { type: Number, required: true },       // discounted price
+originalPrice: { type: Number },               // for discount calc
+discount: { type: Number },                    // e.g., 38
+quantity: { type: Number, default: 1 },
+imageUrl: { type: String },
+inStock: { type: Boolean, default: true },
 }, { _id: false });
 
 // Order Schema
 const orderSchema = new mongoose.Schema({
-  orderId: { type: String, required: true },
-  items: [cartItemSchema],
-  totalAmount: { type: Number, required: true },
-  status: {
-    type: String,
-    enum: ['Pending', 'Completed', 'Cancelled'],
-    default: 'Pending'
-  },
-  createdAt: { type: Date, default: Date.now },
-  address: addressSchema
+orderId: { type: String, required: true },
+items: [cartItemSchema],
+totalAmount: { type: Number, required: true },
+status: {
+type: String,
+enum: ['Pending', 'Completed', 'Cancelled'],
+default: 'Pending'
+},
+createdAt: { type: Date, default: Date.now },
+address: addressSchema
 }, { _id: false });
 
 // User Schema
 const userSchema = new mongoose.Schema({
-  googleId: { type: String, required: true, unique: true },
-  name: String,
-  email: { type: String, required: true, unique: true },
-  picture: String,
-  address: addressSchema,
-  cart: [cartItemSchema],
-  orders: [orderSchema],
+googleId: { type: String, required: true, unique: true },
+name: String,
+email: { type: String, required: true, unique: true },
+picture: String,
+address: addressSchema,
+cart: [cartItemSchema],
+orders: [orderSchema],
 }, { timestamps: true });
 
-// Index for faster queries
+// Index for faster queries on createdAt
 userSchema.index({ createdAt: 1 });
 
-// Create and export model
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 module.exports = User;
+
