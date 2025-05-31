@@ -220,95 +220,83 @@ app.delete('/product/:id', async (req, res) => {
 
 
 
-
-
-
 // POST /api/user/cart
-
 app.post('/cart', async (req, res) => {
-  await connectDB();
+await connectDB();
 
-  try {
-    const { googleId, cartItem } = req.body;
+try {
+const { googleId, cartItem } = req.body;
 
-    if (!googleId || !cartItem || !cartItem.productId) {
-      return res.status(400).json({ message: 'Invalid data' });
-    }
+if (!googleId || !cartItem || !cartItem.productId) {  
+  return res.status(400).json({ message: 'Invalid data' });  
+}  
 
-    // Convert productId to ObjectId safely
-    let productIdObj;
-    try {
-      productIdObj = ObjectId(cartItem.productId);
-    } catch {
-      return res.status(400).json({ message: 'Invalid productId format' });
-    }
+const user = await User.findOne({ googleId });  
 
-    const user = await User.findOne({ googleId });
+if (!user) return res.status(404).json({ message: 'User not found' });  
 
-    if (!user) return res.status(404).json({ message: 'User not found' });
+// Ensure minimum quantity of 1  
+const quantityToAdd = cartItem.quantity && cartItem.quantity > 0 ? cartItem.quantity : 1;  
 
-    const quantityToAdd = cartItem.quantity && cartItem.quantity > 0 ? cartItem.quantity : 1;
+// Check if item already exists in cart  
+const existingItemIndex = user.cart.findIndex(  
+  item => item.productId === cartItem.productId  
+);  
 
-    // Find index by comparing ObjectIds with .equals()
-    const existingItemIndex = user.cart.findIndex(item => item.productId.equals(productIdObj));
+if (existingItemIndex !== -1) {
 
-    if (existingItemIndex !== -1) {
-      user.cart[existingItemIndex].quantity = quantityToAdd;
-    } else {
-      // Push new item - make sure productId is ObjectId here
-      user.cart.push({ ...cartItem, productId: productIdObj, quantity: quantityToAdd });
-    }
+// Replace quantity instead of adding
+user.cart[existingItemIndex].quantity = quantityToAdd;
+} else {
+// Add new item with valid quantity
+user.cart.push({ ...cartItem, quantity: quantityToAdd });
+}
 
-    await user.save();
-    res.status(200).json({ message: 'Cart updated', cart: user.cart });
+await user.save();  
+res.status(200).json({ message: 'Cart updated', cart: user.cart });
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
+} catch (error) {
+console.error(error);
+res.status(500).json({ message: 'Server error' });
+}
 });
 
-
-// POST /update-cart-quantity
+// Route to update only the quantity of a cart item
 app.post('/update-cart-quantity', async (req, res) => {
-  await connectDB();
+await connectDB();
 
-  const { googleId, productId, quantity } = req.body;
+const { googleId, productId, quantity } = req.body;
 
-  if (!googleId || !productId || typeof quantity !== 'number' || quantity < 1) {
-    return res.status(400).json({ success: false, message: 'Invalid input' });
-  }
+if (!googleId || !productId || typeof quantity !== 'number' || quantity < 1) {
+return res.status(400).json({ success: false, message: 'Invalid input' });
+}
 
-  let productIdObj;
-  try {
-    productIdObj = ObjectId(productId);
-  } catch {
-    return res.status(400).json({ success: false, message: 'Invalid productId format' });
-  }
+try {
+const user = await User.findOne({ googleId });
 
-  try {
-    const user = await User.findOne({ googleId });
+if (!user) {  
+  return res.status(404).json({ success: false, message: 'User not found' });  
+}  
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
+const itemIndex = user.cart.findIndex(item => item.productId === productId);  
 
-    // Use ObjectId equals method to find correct item
-    const itemIndex = user.cart.findIndex(item => item.productId.equals(productIdObj));
+if (itemIndex === -1) {  
+  return res.status(404).json({ success: false, message: 'Item not found in cart' });  
+}  
 
-    if (itemIndex === -1) {
-      return res.status(404).json({ success: false, message: 'Item not found in cart' });
-    }
+user.cart[itemIndex].quantity = quantity;  
+await user.save();  
 
-    user.cart[itemIndex].quantity = quantity;
-    await user.save();
+res.status(200).json({ success: true, message: 'Quantity updated', cart: user.cart });
 
-    res.status(200).json({ success: true, message: 'Quantity updated', cart: user.cart });
-  } catch (error) {
-    console.error('Error updating quantity:', error);
-    res.status(500).json({ success: false, message: 'Server error', error });
-  }
+} catch (error) {
+console.error('Error updating quantity:', error);
+res.status(500).json({ success: false, message: 'Server error', error });
+}
 });
+
+
+
 
 
 
