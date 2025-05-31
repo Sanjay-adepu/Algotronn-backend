@@ -13,7 +13,7 @@ const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 require("dotenv").config();
 const Person = require('./Model/Person.js');
-const ObjectId = mongoose.Types.ObjectId;
+const Numbercount = require("./Model/Numbercount.js"); // Updated model name
 
 
 // Cloudinary Configuration
@@ -132,6 +132,7 @@ app.post('/create-person', async (req, res) => {
 
 
 // Route to add product with Cloudinary upload
+
 app.post("/add-product", upload.single("image"), async (req, res) => {
   try {
     await connectDB();
@@ -140,8 +141,7 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
       name, description, type, stock,
       price, originalPrice, discount,
       summary, dailyPL, publicType,
-      isPriced, tradetronLink,
-      sorttype  // <-- new field here
+      isPriced, tradetronLink, sorttype
     } = req.body;
 
     if (!req.file || !req.file.path) {
@@ -150,7 +150,15 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
 
     const imageUrl = req.file.path;
 
+    // ✅ Use Numbercount to generate auto-incrementing ID
+    const counter = await Numbercount.findByIdAndUpdate(
+      { _id: "productid" },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+
     const baseProduct = {
+      id: counter.seq, // Auto-incremented ID
       name,
       description,
       imageUrl,
@@ -161,7 +169,7 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
       publicType,
       isPriced: isPriced === 'true' || isPriced === true,
       tradetronLink,
-      sorttype  // <-- add here
+      sorttype
     };
 
     if (type === 'duplicate') {
@@ -180,7 +188,6 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 
 
