@@ -13,6 +13,8 @@ const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 require("dotenv").config();
 const Person = require('./Model/Person.js');
+const ObjectId = mongoose.Types.ObjectId;
+
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -222,6 +224,7 @@ app.delete('/product/:id', async (req, res) => {
 
 
 // POST /api/user/cart
+
 app.post('/cart', async (req, res) => {
   await connectDB();
 
@@ -232,25 +235,29 @@ app.post('/cart', async (req, res) => {
       return res.status(400).json({ message: 'Invalid data' });
     }
 
+    // Convert productId to ObjectId safely
+    let productIdObj;
+    try {
+      productIdObj = ObjectId(cartItem.productId);
+    } catch {
+      return res.status(400).json({ message: 'Invalid productId format' });
+    }
+
     const user = await User.findOne({ googleId });
 
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Ensure minimum quantity of 1
     const quantityToAdd = cartItem.quantity && cartItem.quantity > 0 ? cartItem.quantity : 1;
 
-    // Check if item already exists in cart
-    const existingItemIndex = user.cart.findIndex(
-      item => item.productId === cartItem.productId
-    );
+    // Find index by comparing ObjectIds with .equals()
+    const existingItemIndex = user.cart.findIndex(item => item.productId.equals(productIdObj));
 
     if (existingItemIndex !== -1) {
-  // Replace quantity instead of adding
-  user.cart[existingItemIndex].quantity = quantityToAdd;
-} else {
-  // Add new item with valid quantity
-  user.cart.push({ ...cartItem, quantity: quantityToAdd });
-}
+      user.cart[existingItemIndex].quantity = quantityToAdd;
+    } else {
+      // Push new item - make sure productId is ObjectId here
+      user.cart.push({ ...cartItem, productId: productIdObj, quantity: quantityToAdd });
+    }
 
     await user.save();
     res.status(200).json({ message: 'Cart updated', cart: user.cart });
@@ -262,8 +269,7 @@ app.post('/cart', async (req, res) => {
 });
 
 
-
-// Route to update only the quantity of a cart item
+// POST /update-cart-quantity
 app.post('/update-cart-quantity', async (req, res) => {
   await connectDB();
 
@@ -273,6 +279,13 @@ app.post('/update-cart-quantity', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Invalid input' });
   }
 
+  let productIdObj;
+  try {
+    productIdObj = ObjectId(productId);
+  } catch {
+    return res.status(400).json({ success: false, message: 'Invalid productId format' });
+  }
+
   try {
     const user = await User.findOne({ googleId });
 
@@ -280,7 +293,8 @@ app.post('/update-cart-quantity', async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const itemIndex = user.cart.findIndex(item => item.productId === productId);
+    // Use ObjectId equals method to find correct item
+    const itemIndex = user.cart.findIndex(item => item.productId.equals(productIdObj));
 
     if (itemIndex === -1) {
       return res.status(404).json({ success: false, message: 'Item not found in cart' });
@@ -295,7 +309,6 @@ app.post('/update-cart-quantity', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 });
-
 
 
 
