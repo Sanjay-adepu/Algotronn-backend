@@ -132,7 +132,7 @@ app.put("/product/:id", upload.single("image"), async (req, res) => {
   try {
     await connectDB();
 
-    const productId = req.params.id;
+    const productId = parseInt(req.params.id, 10); // Parse id as number
 
     const {
       name, description, type, stock,
@@ -165,8 +165,9 @@ app.put("/product/:id", upload.single("image"), async (req, res) => {
       updateFields.imageUrl = req.file.path;
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-      productId,
+    // Use findOneAndUpdate with { id: productId }
+    const updatedProduct = await Product.findOneAndUpdate(
+      { id: productId },    // filter by your custom id field
       { $set: updateFields },
       { new: true }
     );
@@ -181,8 +182,6 @@ app.put("/product/:id", upload.single("image"), async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to update product" });
   }
 });
-
-
 
 
 
