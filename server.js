@@ -126,59 +126,34 @@ app.post('/create-person', async (req, res) => {
 });
 
 
-app.put('/product/:id', upload.single('image'), async (req, res) => {
+// Update product image only
+app.put('/product/:id/image', upload.single('image'), async (req, res) => {
+  await connectDB();
+  const { id } = req.params;
+
+  if (!req.file || !req.file.path) {
+    return res.status(400).json({ success: false, message: 'Image upload failed' });
+  }
+
   try {
-    await connectDB();
-    const productId = req.params.id;
-    const existingProduct = await Product.findOne({ id: productId });
-    if (!existingProduct) {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { imageUrl: req.file.path },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    const {
-      name,
-      description,
-      type,
-      stock,
-      price,
-      originalPrice,
-      discount,
-      summary,
-      dailyPL,
-      publicType,
-      isPriced,
-      tradetronLink,
-      sorttype,
-    } = req.body;
-
-    if (req.file && req.file.path) {
-      existingProduct.imageUrl = req.file.path;
-    }
-
-    existingProduct.name = name;
-    existingProduct.description = description;
-    existingProduct.type = type;
-    existingProduct.stock = stock === 'true' || stock === true;
-    existingProduct.summary = summary;
-    existingProduct.dailyPL = dailyPL;
-    existingProduct.publicType = publicType;
-    existingProduct.isPriced = isPriced === 'true' || isPriced === true;
-    existingProduct.tradetronLink = tradetronLink;
-    existingProduct.sorttype = sorttype;
-
-    if (type === 'duplicate') {
-      existingProduct.price = Number(price);
-      existingProduct.originalPrice = Number(originalPrice);
-      existingProduct.discount = Number(discount);
-    }
-
-    await existingProduct.save();
-    res.status(200).json({ success: true, product: existingProduct });
+    res.status(200).json({ success: true, product: updatedProduct });
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error("Error updating product image:", error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
+
 
 
 
