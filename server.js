@@ -126,7 +126,8 @@ app.post('/create-person', async (req, res) => {
 });
 
 
-// Update product image only
+
+// Update product image using custom `id` field
 app.put('/product/:id/image', upload.single('image'), async (req, res) => {
   await connectDB();
   const { id } = req.params;
@@ -136,8 +137,8 @@ app.put('/product/:id/image', upload.single('image'), async (req, res) => {
   }
 
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
+    const updatedProduct = await Product.findOneAndUpdate(
+      { id: id }, // 👈 use your custom field, not _id
       { imageUrl: req.file.path },
       { new: true }
     );
