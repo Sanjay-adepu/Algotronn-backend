@@ -127,63 +127,6 @@ app.post('/create-person', async (req, res) => {
 
 
 
-// Edit product with optional image upload
-app.put("/product/:id", upload.single("image"), async (req, res) => {
-  try {
-    await connectDB();
-
-    const productId = parseInt(req.params.id, 10); // Parse id as number
-
-    const {
-      name, description, type, stock,
-      price, originalPrice, discount,
-      summary, dailyPL, publicType,
-      isPriced, tradetronLink, sorttype
-    } = req.body;
-
-    const updateFields = {
-      name,
-      description,
-      type,
-      stock: stock === 'true' || stock === true,
-      summary,
-      dailyPL,
-      publicType,
-      isPriced: isPriced === 'true' || isPriced === true,
-      tradetronLink,
-      sorttype
-    };
-
-    if (type === 'duplicate') {
-      updateFields.price = Number(price);
-      updateFields.originalPrice = Number(originalPrice);
-      updateFields.discount = Number(discount);
-    }
-
-    // Check if a new image was uploaded
-    if (req.file && req.file.path) {
-      updateFields.imageUrl = req.file.path;
-    }
-
-    // Use findOneAndUpdate with { id: productId }
-    const updatedProduct = await Product.findOneAndUpdate(
-      { id: productId },    // filter by your custom id field
-      { $set: updateFields },
-      { new: true }
-    );
-
-    if (!updatedProduct) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
-
-    res.status(200).json({ success: true, product: updatedProduct });
-  } catch (error) {
-    console.error("Error updating product:", error);
-    res.status(500).json({ success: false, message: "Failed to update product" });
-  }
-});
-
-
 
 
 
