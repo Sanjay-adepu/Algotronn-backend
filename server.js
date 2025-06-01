@@ -607,7 +607,7 @@ Email: ${newOrder.address.email}
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
           <div style="background-color: #0e1a35; color: white; padding: 20px; text-align: center;">
-            <h2>AlgoTRONN</h2>
+            <h2>Algobazarr</h2>
             <p style="margin: 0;">Order Confirmation</p>
           </div>
 
@@ -809,7 +809,7 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
           <div style="background-color: #8b0000; color: white; padding: 20px; text-align: center;">
-            <h2>AlgoTRONN</h2>
+            <h2>Algobazarr</h2>
             <p style="margin: 0;">Order Cancelled</p>
           </div>
 
