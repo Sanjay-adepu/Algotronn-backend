@@ -126,7 +126,59 @@ app.post('/create-person', async (req, res) => {
 });
 
 
+app.put('/product/:id', upload.single('image'), async (req, res) => {
+  try {
+    await connectDB();
+    const productId = req.params.id;
+    const existingProduct = await Product.findOne({ id: productId });
+    if (!existingProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
 
+    const {
+      name,
+      description,
+      type,
+      stock,
+      price,
+      originalPrice,
+      discount,
+      summary,
+      dailyPL,
+      publicType,
+      isPriced,
+      tradetronLink,
+      sorttype,
+    } = req.body;
+
+    if (req.file && req.file.path) {
+      existingProduct.imageUrl = req.file.path;
+    }
+
+    existingProduct.name = name;
+    existingProduct.description = description;
+    existingProduct.type = type;
+    existingProduct.stock = stock === 'true' || stock === true;
+    existingProduct.summary = summary;
+    existingProduct.dailyPL = dailyPL;
+    existingProduct.publicType = publicType;
+    existingProduct.isPriced = isPriced === 'true' || isPriced === true;
+    existingProduct.tradetronLink = tradetronLink;
+    existingProduct.sorttype = sorttype;
+
+    if (type === 'duplicate') {
+      existingProduct.price = Number(price);
+      existingProduct.originalPrice = Number(originalPrice);
+      existingProduct.discount = Number(discount);
+    }
+
+    await existingProduct.save();
+    res.status(200).json({ success: true, product: existingProduct });
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 
 
