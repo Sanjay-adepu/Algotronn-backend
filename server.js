@@ -128,19 +128,58 @@ app.post('/create-person', async (req, res) => {
 
 
 
-// Update product image using custom `id` field
-app.put('/product/:id/image', upload.single('image'), async (req, res) => {
-  await connectDB();
-  const { id } = req.params;
 
-  if (!req.file || !req.file.path) {
-    return res.status(400).json({ success: false, message: 'Image upload failed' });
-  }
-
+app.put('/product/:id', upload.single('image'), async (req, res) => {
   try {
+    await connectDB();
+    const { id } = req.params;
+
+    // Parse form fields
+    const {
+      name,
+      description,
+      type,
+      stock,
+      price,
+      originalPrice,
+      discount,
+      summary,
+      dailyPL,
+      publicType,
+      isPriced,
+      tradetronLink,
+      sorttype
+    } = req.body;
+
+    // Build updated fields
+    const updatedFields = {
+      name,
+      description,
+      type,
+      summary,
+      dailyPL,
+      publicType,
+      tradetronLink,
+      sorttype,
+      stock: stock === 'true' || stock === true,
+      isPriced: isPriced === 'true' || isPriced === true
+    };
+
+    if (type === 'duplicate') {
+      updatedFields.price = Number(price);
+      updatedFields.originalPrice = Number(originalPrice);
+      updatedFields.discount = Number(discount);
+    }
+
+    // If a new image was uploaded
+    if (req.file && req.file.path) {
+      updatedFields.imageUrl = req.file.path;
+    }
+
+    // Update the product using custom `id`
     const updatedProduct = await Product.findOneAndUpdate(
-      { id: id }, // 👈 use your custom field, not _id
-      { imageUrl: req.file.path },
+      { id: id },
+      updatedFields,
       { new: true }
     );
 
@@ -149,13 +188,12 @@ app.put('/product/:id/image', upload.single('image'), async (req, res) => {
     }
 
     res.status(200).json({ success: true, product: updatedProduct });
+
   } catch (error) {
-    console.error("Error updating product image:", error);
+    console.error("Error updating product:", error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
-
 
 
 
