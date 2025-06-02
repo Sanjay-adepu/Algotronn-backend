@@ -47,8 +47,9 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors({
   origin: ["https://algotronn.vercel.app", "http://localhost:5173", "https://algobazarr-admin.vercel.app"],
-  methods: ["GET", "POST", "DELETE"]
+  methods: ["GET", "POST", "PUT", "DELETE"],
 }));
+
 
 let isConnected = false;
 
