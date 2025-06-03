@@ -639,8 +639,8 @@ const nextOrderId = `ORD${counter.value.toString().padStart(5, '0')}`;
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user:"algotronn.team@gmail.com",
-        pass:"iktzeopoezjvdmcp"
+        user:"algobazarr@gmail.com",
+        pass:"ovqcwzysvcmwkauf"
       }
     });
 
@@ -666,9 +666,9 @@ Email: ${newOrder.address.email}
     `;
 
     const mailOptions = {
-      from: 'algotronn.team@gmail.com',
-      to: 'algotronn.team@gmail.com',
-      subject: `Order Confirmation - ${newOrder.orderId} | AlgoTRONN`,
+      from: 'algobazarr@gmail.com',
+      to: 'algobazarr@gmail.com',
+      subject: `Order Confirmation - ${newOrder.orderId} | Algobazarr`,
       text: plainTextBody,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
@@ -709,7 +709,7 @@ Email: ${newOrder.address.email}
           </div>
 
           <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
-            <p style="margin: 0; font-size: 13px;">AlgoTRONN Admin Panel</p>
+            <p style="margin: 0; font-size: 13px;">Algobazarr Admin Panel</p>
           </div>
         </div>
       `
@@ -850,8 +850,10 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user:"algotronn.team@gmail.com",
-        pass:"iktzeopoezjvdmcp"
+        user:"algobazarr@gmail.com",
+        pass:"ovqcwzysvcmwkauf"
+
+
       }
     });
 
@@ -868,9 +870,9 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     `).join('');
 
     const mailOptions = {
-      from: 'algotronn.team@gmail.com',
-      to: 'algotronn.team@gmail.com',
-      subject: `Order Cancelled - ${order.orderId} | AlgoTRONN`,
+      from: 'algobazarr@gmail.com',
+      to: 'algobazarr@gmail.com',
+      subject: `Order Cancelled - ${order.orderId} | Algobazarr`,
       text: `Order ${order.orderId} has been cancelled.\n\nItems:\n${itemList}\n\nTotal: ₹${order.totalAmount}\n`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
@@ -898,7 +900,7 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
           </div>
 
           <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
-            <p style="margin: 0; font-size: 13px;">AlgoTRONN Admin Panel</p>
+            <p style="margin: 0; font-size: 13px;">Algobazarr Admin Panel</p>
           </div>
         </div>
       `
