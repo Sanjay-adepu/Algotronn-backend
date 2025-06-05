@@ -77,10 +77,16 @@ app.post('/signup1', async (req, res) => {
   }
 
   try {
-    // Check if user with username or email already exists
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    // Check if username or email already exists
+    const existingUser = await User.findOne({ 
+      $or: [
+        { username },
+        { email }
+      ]
+    });
+
     if (existingUser) {
-      return res.status(409).json({ success: false, message: "User with this username or email already exists" });
+      return res.status(409).json({ success: false, message: "Username or email already exists" });
     }
 
     const newUser = new User({ username, password, mobile, email });
@@ -94,16 +100,20 @@ app.post('/signup1', async (req, res) => {
 });
 
 
+
+
+
+
 app.post('/login1', async (req, res) => {
   await connectDB();
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ success: false, message: "Username and password are required" });
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: "Email and password are required" });
   }
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
 
     if (!user || user.password !== password) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -115,12 +125,6 @@ app.post('/login1', async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
-
-
-
-
-
 
 
 
