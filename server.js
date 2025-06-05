@@ -14,7 +14,7 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 require("dotenv").config();
 const Person = require('./Model/Person.js');
 const Numbercount = require("./Model/Numbercount.js"); // Updated model name
-
+const { v4: uuidv4 } = require('uuid');
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -66,6 +66,53 @@ async function connectDB() {
     console.error("MongoDB connection error:", error);
   }
 }
+
+
+
+
+
+app.post('/signup1', async (req, res) => {
+  await connectDB();
+  const { username, password, mobile, email } = req.body;
+
+  if (!username || !password || !mobile || !email) {
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
+
+  try {
+    // Check if username or email already exists
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }]
+    });
+
+    if (existingUser) {
+      return res.status(409).json({ success: false, message: "Username or email already exists" });
+    }
+
+    const newUser = new User({
+      username,
+      password,
+      mobile,
+      email,
+      googleId: uuidv4(), // manually generated unique ID
+    });
+
+    await newUser.save();
+
+    return res.status(201).json({ success: true, message: "Signup successful", user: newUser });
+
+  } catch (err) {
+    console.error("Signup error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+
+
+
+
+
 
 
 app.post('/signup1', async (req, res) => {
