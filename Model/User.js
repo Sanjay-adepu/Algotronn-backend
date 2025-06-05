@@ -39,16 +39,21 @@ createdAt: { type: Date, default: Date.now },
 address: addressSchema
 }, { _id: false });
 
+
 // User Schema
 const userSchema = new mongoose.Schema({
-googleId: { type: String, required: true, unique: true },
-name: String,
-email: { type: String, required: true, unique: true },
-picture: String,
-address: addressSchema,
-cart: [cartItemSchema],
-orders: [orderSchema],
+  googleId: { type: String, unique: true, sparse: true },
+  name: String,
+  email: { type: String, unique: true, sparse: true },
+  mobile: { type: String },
+  picture: String,
+  address: addressSchema,
+  cart: [cartItemSchema],
+  orders: [orderSchema],
+  username: { type: String, unique: true, sparse: true }, // <-- Added username
+  password: { type: String }, // <-- Added password
 }, { timestamps: true });
+
 
 // Index for faster queries on createdAt
 userSchema.index({ createdAt: 1 });
