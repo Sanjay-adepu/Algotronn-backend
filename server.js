@@ -70,19 +70,20 @@ async function connectDB() {
 
 app.post('/signup1', async (req, res) => {
   await connectDB();
-  const { username, password, mobile } = req.body;
+  const { username, password, mobile, email } = req.body;
 
-  if (!username || !password || !mobile) {
+  if (!username || !password || !mobile || !email) {
     return res.status(400).json({ success: false, message: "All fields are required" });
   }
 
   try {
-    const existingUser = await User.findOne({ username });
+    // Check if user with username or email already exists
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existingUser) {
-      return res.status(409).json({ success: false, message: "User already exists" });
+      return res.status(409).json({ success: false, message: "User with this username or email already exists" });
     }
 
-    const newUser = new User({ username, password, mobile });
+    const newUser = new User({ username, password, mobile, email });
     await newUser.save();
 
     return res.status(201).json({ success: true, message: "Signup successful", user: newUser });
@@ -91,7 +92,6 @@ app.post('/signup1', async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 
 app.post('/login1', async (req, res) => {
