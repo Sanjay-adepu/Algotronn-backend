@@ -1162,8 +1162,8 @@ app.get('/users', async (req, res) => {
     res.json({
       newUserCount: newUsers.length,
       oldUserCount: oldUsers.length,
-      newUsers: newUsers.map(u => ({ name: u.name, email: u.email, mobile: u.mobile })),
-      oldUsers: oldUsers.map(u => ({ name: u.name, email: u.email, mobile: u.mobile }))
+      newUsers: newUsers.map(u => ({ name: u.username, email: u.email, mobile: u.mobile })),
+      oldUsers: oldUsers.map(u => ({ name: u.username, email: u.email, mobile: u.mobile }))
     });
 
   } catch (err) {
