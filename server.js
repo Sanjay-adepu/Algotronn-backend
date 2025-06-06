@@ -815,12 +815,12 @@ ${newOrder.address.city}, ${newOrder.address.state} - ${newOrder.address.pincode
 
             <h3 style="color: #333; margin-top: 30px;">Shipping Address</h3>
             <p style="margin: 0;">
-              ${newOrder.address.name}<br/>
+              ${newOrder.name}<br/>
               ${newOrder.address.address}, ${newOrder.address.locality}<br/>
               ${newOrder.address.landmark}<br/>
               ${newOrder.address.city}, ${newOrder.address.state} - ${newOrder.address.pincode}<br/>
-              <strong>Mobile:</strong> ${newOrder.address.mobile}<br/>
-              <strong>Email:</strong> ${newOrder.address.email}
+              <strong>Mobile:</strong> ${newOrder.mobile}<br/>
+              <strong>Email:</strong> ${newOrder.email}
             </p>
 
             <a href="https://algotronn-backend.vercel.app/mark-delivered/${newOrder.orderId}" 
