@@ -2,9 +2,7 @@ const mongoose = require('mongoose');
 
 // Address Schema
 const addressSchema = new mongoose.Schema({
-name: { type: String, required: true },
-mobile: { type: String, required: true },
-email: { type: String, required: true },
+
 address: { type: String, required: true },
 locality: { type: String, default: '' },
 landmark: { type: String, default: '' },
