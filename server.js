@@ -739,6 +739,9 @@ const nextOrderId = `ORD${counter.value.toString().padStart(5, '0')}`;
       totalAmount,
       status: 'Pending',
       address: user.address,
+      name:user.username,
+      mobile:user.mobile,
+      email:user.email
     };
 
     user.orders.push(newOrder);
