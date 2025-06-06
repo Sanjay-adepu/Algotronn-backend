@@ -717,9 +717,17 @@ app.post('/place-order', async (req, res) => {
 
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
     if (!user.cart || user.cart.length === 0) return res.status(400).json({ success: false, message: 'Cart is empty' });
-    if (!user.address) return res.status(400).json({ success: false, message: 'Address not found' });
-
   
+const address = user.address || {
+  address: 'N/A',
+  city: 'N/A',
+  state: 'N/A',
+  pincode: 'N/A',
+  name: user.username || 'N/A',
+  mobile: user.mobile || 'N/A',
+  email: user.email || 'N/A',
+};
+
     // Get next unique orderId from global counter
 const counter = await Counter.findOneAndUpdate(
   { name: 'orderId' },
@@ -734,15 +742,16 @@ const nextOrderId = `ORD${counter.value.toString().padStart(5, '0')}`;
     const totalAmount = user.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const newOrder = {
-      orderId: nextOrderId,
-      items: user.cart,
-      totalAmount,
-      status: 'Pending',
-      address: user.address,
-      name:user.username,
-      mobile:user.mobile,
-      email:user.email
-    };
+  orderId: nextOrderId,
+  items: user.cart,
+  totalAmount,
+  status: 'Pending',
+  address, // fallback used here
+  name: user.username,
+  mobile: user.mobile,
+  email: user.email,
+};
+
 
     user.orders.push(newOrder);
     user.cart = [];
