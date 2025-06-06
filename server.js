@@ -1030,7 +1030,28 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res.send(`Order ${orderId} has been marked as Cancelled and email sent successfully.`);
+    res.status(200).json({
+  success: true,
+  message: `Order ${orderId} has been cancelled and email sent successfully.`,
+  data: {
+    orderId: order.orderId,
+    status: order.status,
+    name: order.name || user.name || null,
+    email: order.email || user.email || null,
+    mobile: order.mobile || user.mobile || null,
+    totalAmount: order.totalAmount,
+    address: {
+      address: order.address?.address || '',
+      locality: order.address?.locality || '',
+      landmark: order.address?.landmark || '',
+      city: order.address?.city || '',
+      state: order.address?.state || '',
+      pincode: order.address?.pincode || ''
+    },
+    items: order.items
+  }
+});
+
   } catch (err) {
     console.error('Mark Cancelled Error:', err);
     res.status(500).send('Server error');
