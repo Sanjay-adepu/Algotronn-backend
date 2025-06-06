@@ -722,10 +722,8 @@ const address = user.address || {
   address: 'N/A',
   city: 'N/A',
   state: 'N/A',
-  pincode: 'N/A',
-  name: user.username || 'N/A',
-  mobile: user.mobile || 'N/A',
-  email: user.email || 'N/A',
+  pincode: 'N/A'
+  
 };
 
     // Get next unique orderId from global counter
