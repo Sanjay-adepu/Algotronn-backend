@@ -1035,7 +1035,7 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
   data: {
     orderId: order.orderId,
     status: order.status,
-    name: order.name || user.name || null,
+    name: order.name || user.username || null,
     email: order.email || user.email || null,
     mobile: order.mobile || user.mobile || null,
     totalAmount: order.totalAmount,
