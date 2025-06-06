@@ -1,4 +1,4 @@
-const express = require('express');
+k useconst express = require('express');
 const { OAuth2Client } = require('google-auth-library');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -1011,12 +1011,13 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
 
             <h3 style="color: #333; margin-top: 30px;">Shipping Address</h3>
             <p style="margin: 0;">
-              ${order.address.name}<br/>
+              ${order.name}<br/>
+                 <strong>Mobile:</strong> ${order.mobile}<br/>
+              <strong>Email:</strong> ${order.email}
               ${order.address.address}, ${order.address.locality}<br/>
               ${order.address.landmark}<br/>
               ${order.address.city}, ${order.address.state} - ${order.address.pincode}<br/>
-              <strong>Mobile:</strong> ${order.address.mobile}<br/>
-              <strong>Email:</strong> ${order.address.email}
+            
             </p>
           </div>
 
