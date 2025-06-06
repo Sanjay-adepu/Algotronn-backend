@@ -777,12 +777,13 @@ Items:
 ${plainTextItems}
 
 Shipping Address:
-${newOrder.address.name}
+${newOrder.name}
+Mobile: ${newOrder.mobile}
+Email: ${newOrder.email},
 ${newOrder.address.address}, ${newOrder.address.locality}
 ${newOrder.address.landmark}
 ${newOrder.address.city}, ${newOrder.address.state} - ${newOrder.address.pincode}
-Mobile: ${newOrder.address.mobile}
-Email: ${newOrder.address.email}
+
     `;
 
     const mailOptions = {
