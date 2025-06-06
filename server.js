@@ -1010,15 +1010,14 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
             ${htmlItems}
 
             <h3 style="color: #333; margin-top: 30px;">Shipping Address</h3>
-            <p style="margin: 0;">
-              ${order.name}<br/>
-                 <strong>Mobile:</strong> ${order.mobile}<br/>
-              <strong>Email:</strong> ${order.email}
-              ${order.address.address}, ${order.address.locality}<br/>
-              ${order.address.landmark}<br/>
-              ${order.address.city}, ${order.address.state} - ${order.address.pincode}<br/>
-            
-            </p>
+          <p style="margin: 0;">
+  ${order.name || user.username || 'N/A'}<br/>
+  <strong>Mobile:</strong> ${order.mobile || user.mobile || 'N/A'}<br/>
+  <strong>Email:</strong> ${order.email || user.email || 'N/A'}<br/>
+  ${order.address?.address || 'N/A'}, ${order.address?.locality || ''}<br/>
+  ${order.address?.landmark || ''}<br/>
+  ${order.address?.city || 'N/A'}, ${order.address?.state || 'N/A'} - ${order.address?.pincode || 'N/A'}<br/>
+</p>
           </div>
 
           <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
