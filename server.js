@@ -744,12 +744,11 @@ const nextOrderId = `ORD${counter.value.toString().padStart(5, '0')}`;
   items: user.cart,
   totalAmount,
   status: 'Pending',
-  address, // fallback used here
-  name: user.username,
-  mobile: user.mobile,
-  email: user.email,
+  address, // already set earlier with fallback
+  name: address.name || user.username || 'N/A',
+  mobile: address.mobile || user.mobile || 'N/A',
+  email: address.email || user.email || 'N/A',
 };
-
 
     user.orders.push(newOrder);
     user.cart = [];
