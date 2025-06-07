@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 // Address Schema
 const addressSchema = new mongoose.Schema({
   name: { type: String, required: false },
-  email: { type: String, unique: true, sparse: true, required: false },
+  email: { type: String,  required: false },
   mobile: { type: String, required: false },
   address: { type: String, required: true },
   locality: { type: String, default: '' },
