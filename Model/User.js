@@ -2,14 +2,17 @@ const mongoose = require('mongoose');
 
 // Address Schema
 const addressSchema = new mongoose.Schema({
-
-address: { type: String, required: true },
-locality: { type: String, default: '' },
-landmark: { type: String, default: '' },
-pincode: { type: String, required: true },
-city: { type: String, required: true },
-state: { type: String, required: true },
+  name: { type: String, required: false },
+  email: { type: String, unique: true, sparse: true, required: false },
+  mobile: { type: String, required: false },
+  address: { type: String, required: true },
+  locality: { type: String, default: '' },
+  landmark: { type: String, default: '' },
+  pincode: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true }
 }, { _id: false });
+
 
 // Cart Item Schema
 const cartItemSchema = new mongoose.Schema({
