@@ -945,6 +945,7 @@ app.get('/mark-delivered/:orderId', async (req, res) => {
 });
 
 
+
 app.get('/mark-cancelled/:orderId', async (req, res) => {
   await connectDB();
   const { orderId } = req.params;
@@ -966,14 +967,17 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     order.status = 'Cancelled';
     await user.save();
 
+    // Fallback for name, mobile, email from order.address or user
+    const name = order.address?.name || user.username || 'N/A';
+    const mobile = order.address?.mobile || user.mobile || 'N/A';
+    const email = order.address?.email || user.email || 'N/A';
+
     // Send cancellation email
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user:"algobazarr@gmail.com",
-        pass:"ovqcwzysvcmwkauf"
-
-
+        user: "algobazarr@gmail.com",
+        pass: "ovqcwzysvcmwkauf"
       }
     });
 
@@ -1009,14 +1013,14 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
             ${htmlItems}
 
             <h3 style="color: #333; margin-top: 30px;">Shipping Address</h3>
-          <p style="margin: 0;">
-  ${order.name || user.username || 'N/A'}<br/>
-  <strong>Mobile:</strong> ${order.mobile || user.mobile || 'N/A'}<br/>
-  <strong>Email:</strong> ${order.email || user.email || 'N/A'}<br/>
-  ${order.address?.address || 'N/A'}, ${order.address?.locality || ''}<br/>
-  ${order.address?.landmark || ''}<br/>
-  ${order.address?.city || 'N/A'}, ${order.address?.state || 'N/A'} - ${order.address?.pincode || 'N/A'}<br/>
-</p>
+            <p style="margin: 0;">
+              ${name}<br/>
+              ${order.address?.address || 'N/A'}, ${order.address?.locality || ''}<br/>
+              ${order.address?.landmark || ''}<br/>
+              ${order.address?.city || 'N/A'}, ${order.address?.state || 'N/A'} - ${order.address?.pincode || 'N/A'}<br/>
+              <strong>Mobile:</strong> ${mobile}<br/>
+              <strong>Email:</strong> ${email}<br/>
+            </p>
           </div>
 
           <div style="background-color: #f2f2f2; padding: 15px; text-align: center;">
@@ -1029,32 +1033,39 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     await transporter.sendMail(mailOptions);
 
     res.status(200).json({
-  success: true,
-  message: `Order ${orderId} has been cancelled and email sent successfully.`,
-  data: {
-    orderId: order.orderId,
-    status: order.status,
-    name: order.name || user.username || null,
-    email: order.email || user.email || null,
-    mobile: order.mobile || user.mobile || null,
-    totalAmount: order.totalAmount,
-    address: {
-      address: order.address?.address || '',
-      locality: order.address?.locality || '',
-      landmark: order.address?.landmark || '',
-      city: order.address?.city || '',
-      state: order.address?.state || '',
-      pincode: order.address?.pincode || ''
-    },
-    items: order.items
-  }
-});
+      success: true,
+      message: `Order ${orderId} has been cancelled and email sent successfully.`,
+      data: {
+        orderId: order.orderId,
+        status: order.status,
+        name,
+        email,
+        mobile,
+        totalAmount: order.totalAmount,
+        address: {
+          address: order.address?.address || '',
+          locality: order.address?.locality || '',
+          landmark: order.address?.landmark || '',
+          city: order.address?.city || '',
+          state: order.address?.state || '',
+          pincode: order.address?.pincode || ''
+        },
+        items: order.items
+      }
+    });
 
   } catch (err) {
     console.error('Mark Cancelled Error:', err);
     res.status(500).send('Server error');
   }
 });
+
+
+
+
+
+
+
 
 app.post('/get-all-orders-by-date', async (req, res) => {
 await connectDB();
