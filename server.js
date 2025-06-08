@@ -1192,20 +1192,28 @@ app.post('/get-order-details', async (req, res) => {
 });
 
 
+
+
 app.get('/users', async (req, res) => {
   await connectDB();
 
   try {
-    const oneWeekAgo = new Date(Date.now() - 7*24*60*60*1000);
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const newUsers = await User.find({ createdAt: { $gte: oneWeekAgo } });
     const oldUsers = await User.find({ createdAt: { $lt: oneWeekAgo } });
 
+    const formatUser = (user) => ({
+      name: user.username || user.name || user.address?.name || null,
+      email: user.email,
+      mobile: user.mobile || user.address?.mobile || null
+    });
+
     res.json({
       newUserCount: newUsers.length,
       oldUserCount: oldUsers.length,
-      newUsers: newUsers.map(u => ({ name: u.username, email: u.email, mobile: u.mobile })),
-      oldUsers: oldUsers.map(u => ({ name: u.username, email: u.email, mobile: u.mobile }))
+      newUsers: newUsers.map(formatUser),
+      oldUsers: oldUsers.map(formatUser)
     });
 
   } catch (err) {
@@ -1213,8 +1221,6 @@ app.get('/users', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-
 
 
 
