@@ -758,8 +758,8 @@ const nextOrderId = `ORD${counter.value.toString().padStart(5, '0')}`;
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user:"algobazarr@gmail.com",
-        pass:"ovqcwzysvcmwkauf"
+        user:"algodukaan@gmail.com",
+        pass:"jmiavmbylhowszdf"
       }
     });
 
@@ -786,14 +786,14 @@ ${newOrder.address.city}, ${newOrder.address.state} - ${newOrder.address.pincode
     `;
 
     const mailOptions = {
-      from: 'algobazarr@gmail.com',
-      to: 'algobazarr@gmail.com',
+      from: 'algdukaan@gmail.com',
+      to: 'algodukaan@gmail.com',
       subject: `Order Confirmation - ${newOrder.orderId} | Algobazarr`,
       text: plainTextBody,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
           <div style="background-color: #0e1a35; color: white; padding: 20px; text-align: center;">
-            <h2>Algobazarr</h2>
+            <h2>Algodukaan</h2>
             <p style="margin: 0;">Order Confirmation</p>
           </div>
 
@@ -976,8 +976,8 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: "algobazarr@gmail.com",
-        pass: "ovqcwzysvcmwkauf"
+        user:"algodukaan@gmail.com",
+        pass:"jmiavmbylhowszdf"
       }
     });
 
@@ -994,8 +994,8 @@ app.get('/mark-cancelled/:orderId', async (req, res) => {
     `).join('');
 
     const mailOptions = {
-      from: 'algobazarr@gmail.com',
-      to: 'algobazarr@gmail.com',
+      from: 'algodukaan@gmail.com',
+      to: 'algodukaan@gmail.com',
       subject: `Order Cancelled - ${order.orderId} | Algobazarr`,
       text: `Order ${order.orderId} has been cancelled.\n\nItems:\n${itemList}\n\nTotal: ₹${order.totalAmount}\n`,
       html: `
